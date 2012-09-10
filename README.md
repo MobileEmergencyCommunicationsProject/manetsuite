@@ -1,4 +1,5 @@
 mecp
 ====
 
-The Mobile Emergency Communications Project is about group communication using mobile phones. It is a suite of free, open source applications.
+The MANET Suite is about group communication over WIFI using mobile phones. 
+It is a collection of free, open source applications.
