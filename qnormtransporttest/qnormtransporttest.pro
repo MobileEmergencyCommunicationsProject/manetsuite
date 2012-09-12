@@ -1,0 +1,54 @@
+#-------------------------------------------------
+#
+# Project created by QtCreator 2012-08-20T12:16:30
+#
+#-------------------------------------------------
+
+QT       += core
+QT       -= gui
+
+TARGET = qnormtransporttest
+CONFIG   += console
+CONFIG   -= app_bundle
+CONFIG += link_prl
+
+TEMPLATE = app
+
+unix:!macx: LIBS += $$OUT_PWD/../qnormtransport/libqnormtransport.a $$OUT_PWD/../norm/libnorm.a $$OUT_PWD/../protolib/libprotolib.a
+
+HEADERS += testlogic.h
+SOURCES += main.cpp \
+    testlogic.cpp
+
+unix:!symbian {
+    maemo5 {
+	target.path = /opt/manetsuite/bin
+    }else:contains(MEEGO_EDITION,harmattan) {
+	target.path = /opt/manetsuite/bin
+    } else {
+	target.path = /usr/bin
+    }
+
+    INSTALLS += target
+}
+
+INCLUDEPATH += $$PWD/../protolib/include
+DEPENDPATH += $$PWD/../protolib
+
+win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../protolib/release/protolib.lib
+else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../protolib/debug/protolib.lib
+else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../protolib/libprotolib.a
+
+INCLUDEPATH += $$PWD/../norm/include
+DEPENDPATH += $$PWD/../norm
+
+win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../norm/release/norm.lib
+else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../norm/debug/norm.lib
+else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../norm/libnorm.a
+
+INCLUDEPATH += $$PWD/../qnormtransport
+DEPENDPATH += $$PWD/../qnormtransport
+
+win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../qnormtransport/release/qnormtransport.lib
+else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../qnormtransport/debug/qnormtransport.lib
+else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../qnormtransport/libqnormtransport.a
