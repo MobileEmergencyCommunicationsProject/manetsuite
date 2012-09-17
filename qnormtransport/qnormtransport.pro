@@ -41,6 +41,15 @@ symbian {
 }
 
 unix:!symbian {
+    #
+    # Every application that builds on the QNormTransport
+    # classes must define these constants in order to compile
+    # and run correctly.
+    #
+    DEFINES += _FILE_OFFSET_BITS=64 ECN_SUPPORT HAVE_ASSERT HAVE_DIRFD \
+	HAVE_GETLOGIN HAVE_IPV6 HAVE_LOCKF \
+	HAVE_OLD_SIGNALHANDLER LINUX PROTO_DEBUG UNIX
+
     maemo5 {
 	target.path = /opt/manetsuite/lib
     } else:contains(MEEGO_EDITION,harmattan) {

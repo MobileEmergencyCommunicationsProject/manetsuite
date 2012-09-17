@@ -2,11 +2,12 @@
 #define QNORMQFILESTREAM_H
 
 #include <QByteArray>
+#include <QDirIterator>
 #include <QList>
 #include <QNormTransport>
 
 //
-// To transmit a file, write() its name as a null-terminated string
+// To transmit a file, write() its name as a newline-terminated string
 // into a QNormFileTransport.  It is up to the user to ensure that
 // the file is readable.
 //
@@ -41,7 +42,19 @@ public:
 signals:
     // Raise newFile when this QNormFileTransport
     // recognizes that it is about to receive a file.
-    void newFile(const QString & fileName);
+    // Receiver can decline to receive the file by
+    // calling NormObjectCancel(object);
+    //
+    void newFile(const QString fileName, const NormObjectHandle object);
+
+    // Raise objectSent when this QNormTransport
+    // recognizes that the protocol has completed
+    // at least one pass at sending the NormObject.
+    // This signal is analogous to the NORM_TX_OBJECT_SENT
+    // event of the NORM API.
+    //
+    // TODO: consider moving objectSent to the base class.
+    void objectSent(const NormObjectHandle object);
 
 public slots:
     
@@ -53,9 +66,24 @@ protected:
     qint64 writeData(const char *data, qint64 len);
 
 private:
-    QList<QByteArray> _fileNameQueue; // Names of files waiting to be sent.
+    QList<QString> _fileNameQueue; // Names of directories and files waiting to be sent.
+    QDirIterator *_directoryIterator;  // Used when sending directories of files.
+    QString _currentFile;
 
-    void sendFiles(); // Enqueue for transmission as many file names from _fileNameQueue as will fit.
+    /*
+      currentFile(), hasNextFile(), and nextFile()
+      implement an iterator over _fileNameQueue and
+      _directoryIterator.
+    */
+    const QString currentFile();
+    bool hasNextFile();
+    const QString nextFile();
+
+    /* Enqueue for transmission as many file names
+       from the _fileNameQueue-_directoryIterator iterator
+       as will fit.
+    */
+    void sendFiles();
 };
 
 #endif // QNORMQFILESTREAM_H

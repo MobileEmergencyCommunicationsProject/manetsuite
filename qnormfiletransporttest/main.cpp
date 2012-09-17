@@ -47,7 +47,7 @@ const char *interface(int argc, char *argv[])
 }
 
 void usage() {
-    std::cout << "Usage: qnormfiletransporttest -r [interface-name [directory-name]]" << std::endl;
+    std::cout << "Usage: qnormfiletransporttest -r [interface-name]" << std::endl;
     std::cout << "Usage: qnormfiletransporttest -s interface-name file-name" << std::endl;
 }
 

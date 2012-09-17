@@ -28,80 +28,99 @@ void NormNotifier::notify(int socket)
 
         // NORM sender events
         case NORM_TX_QUEUE_VACANCY:
+            qDebug() << "NormNotifier::NORM_TX_QUEUE_VACANCY";
             t->normTxQueueVacancy(&event);
             break;
         case NORM_TX_QUEUE_EMPTY:
+            qDebug() << "NormNotifier::NORM_TX_QUEUE_EMPTY";
             t->normTxQueueEmpty(&event);
             break;
         case NORM_TX_FLUSH_COMPLETED:
+            qDebug() << "NormNotifier::NORM_TX_FLUSH_COMPLETED";
             t->normTxFlushCompleted(&event);
             break;
         case NORM_TX_WATERMARK_COMPLETED:
+            qDebug() << "NormNotifier::NORM_TX_WATERMARK_COMPLETED";
             t->normTxWatermarkCompleted(&event);
             break;
         case NORM_TX_OBJECT_SENT:
+            qDebug() << "NormNotifier::NORM_TX_OBJECT_SENT";
             t->normTxObjectSent(&event);
             break;
         case NORM_TX_OBJECT_PURGED:
+            qDebug() << "NormNotifier::NORM_TX_OBJECT_PURGED";
             t->normTxObjectPurged(&event);
             break;
         case NORM_TX_CMD_SENT:
+            qDebug() << "NormNotifier::NORM_TX_CMD_SENT";
             t->normTxCmdSent(&event);
             break;
         case NORM_TX_RATE_CHANGED:
+            qDebug() << "NormNotifier::NORM_TX_RATE_CHANGED";
             t->normTxRateChanged(&event);
             break;
         case NORM_LOCAL_SENDER_CLOSED:
+            qDebug() << "NormNotifier::NORM_TX_LOCAL_SENDER_CLOSED";
             t->normLocalSenderClosed(&event);
             break;
         case NORM_CC_ACTIVE:
+            qDebug() << "NormNotifier::NORM_CC_ACTIVE";
             t->normCCActive(&event);
             break;
         case NORM_CC_INACTIVE:
+            qDebug() << "NormNotifier::NORM_CC_INACTIVE";
             t->normCCInactive(&event);
             break;
 
         // NORM receiver events
         case NORM_REMOTE_SENDER_NEW:
+            qDebug() << "NormNotifier::notify(): NORM_REMOTE_SENDER_NEW";
             t->normRemoteSenderNew(&event);
             break;
         case NORM_REMOTE_SENDER_ACTIVE:
+            qDebug() << "NormNotifier::notify(): NORM_REMOTE_SENDER_ACTIVE";
             t->normRemoteSenderActive(&event);
             break;
         case NORM_REMOTE_SENDER_INACTIVE:
+            qDebug() << "NormNotifier::notify(): NORM_REMOTE_SENDER_INACTIVE";
             t->normRemoteSenderInactive(&event);
             break;
         case NORM_REMOTE_SENDER_PURGED:
+            qDebug() << "NormNotifier::notify(): NORM_REMOTE_SENDER_PURGED";
             t->normRemoteSenderPurged(&event);
             break;
         case NORM_RX_OBJECT_NEW:
-//            qDebug() << "NormNotifier::notify(): NORM_RX_OBJECT_NEW";
+            qDebug() << "NormNotifier::notify(): NORM_RX_OBJECT_NEW";
             t->normRxObjectNew(&event);
             break;
         case NORM_RX_OBJECT_INFO:
+            qDebug() << "NormNotifier::notify(): NORM_RX_OBJECT_INFO";
             t->normRxObjectInfo(&event);
             break;
         case NORM_RX_OBJECT_UPDATED:
-//            qDebug() << "NormNotifier::notify(): NORM_RX_OBJECT_UPDATED";
+            qDebug() << "NormNotifier::notify(): NORM_RX_OBJECT_UPDATED";
             t->normRxObjectUpdated(&event);
             break;
         case NORM_RX_OBJECT_COMPLETED:
-//            qDebug() << "NormNotifier::notify(): NORM_RX_OBJECT_COMPLETED";
+            qDebug() << "NormNotifier::notify(): NORM_RX_OBJECT_COMPLETED";
             t->normRxObjectCompleted(&event);
             break;
         case NORM_RX_OBJECT_ABORTED:
-//            qDebug() << "NormNotifier::notify(): NORM_RX_OBJECT_ABORTED";
+            qDebug() << "NormNotifier::notify(): NORM_RX_OBJECT_ABORTED";
             t->normRxObjectAborted(&event);
             break;
         case NORM_RX_CMD_NEW:
+            qDebug() << "NormNotifier::notify(): NORM_RX_CMD_NEW";
             t->normRxCmdNew(&event);
             break;
 
         // NORM miscellaneous events
         case NORM_GRTT_UPDATED:
+            qDebug() << "NormNotifier::notify(): NORM_GRTT_UPDATED";
             t->normGrttUpdated(&event);
             break;
         case NORM_EVENT_INVALID:
+            qDebug() << "NormNotifier::notify(): NORM_EVENT_INVALID";
             t->normEventInvalid(&event);
             break;
 

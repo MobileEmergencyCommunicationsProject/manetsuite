@@ -66,11 +66,12 @@ void TestLogic::update()
         // it should write the remaining bytes.
 
         QString msg = QString("Message %1").arg(_sequenceNumber);
+        QByteArray msgByteArray = msg.toLocal8Bit();
         _sequenceNumber ++;
-        numBytes = _sender->write(msg.toAscii().constData(), msg.length() + 1);
+        numBytes = _sender->write(msgByteArray.constData(), msgByteArray.length() + 1);
         _readyWrite = ((msg.length()+ 1) == numBytes);
 
-        std::cout << msg.toAscii().constData() << std::endl;
+        std::cout << msgByteArray.constData() << std::endl;
 
         if (_readyWrite) {
 //            _sender->markEom();

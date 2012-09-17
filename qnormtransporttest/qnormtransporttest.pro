@@ -21,6 +21,10 @@ SOURCES += main.cpp \
     testlogic.cpp
 
 unix:!symbian {
+    DEFINES += _FILE_OFFSET_BITS=64 ECN_SUPPORT HAVE_ASSERT HAVE_DIRFD \
+	HAVE_GETLOGIN HAVE_IPV6 HAVE_LOCKF \
+	HAVE_OLD_SIGNALHANDLER LINUX PROTO_DEBUG UNIX
+
     maemo5 {
 	target.path = /opt/manetsuite/bin
     }else:contains(MEEGO_EDITION,harmattan) {

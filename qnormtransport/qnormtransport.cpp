@@ -34,11 +34,6 @@ QNormTransport::~QNormTransport()
     if (QIODevice::NotOpen != openMode())
         close();
 
-    if (NULL != _cacheDirectory) {
-        free(_cacheDirectory);
-        _cacheDirectory = NULL;
-    }
-
     NormDestroySession(_normSessionHandle);
     NormInstanceManager::instance()->releaseNormInstanceHandle(_normInstanceHandle);
 }
@@ -48,9 +43,9 @@ qint64 QNormTransport::bytesAvailable()
     return _readBuffer.size() + QIODevice::bytesAvailable();
 }
 
-const char * QNormTransport::cacheDirectory()
+const QDir * QNormTransport::cacheDirectory()
 {
-    return _cacheDirectory;
+    return &_cacheDirectory;
 }
 
 void QNormTransport::close()
@@ -282,12 +277,11 @@ qint64 QNormTransport::readData(char *data, qint64 maxlen)
    return answer;
 }
 
-bool QNormTransport::setCacheDirectory(const char* cachePath)
+bool QNormTransport::setCacheDirectory(const QString & cachePath)
 {
-    _cacheDirectory = strdup(cachePath);
-    // TODO: Ensure that _cacheDirectory ends with a slash
-
-    return NormSetCacheDirectory(_normSessionHandle, cachePath);
+    QByteArray cachePathByteArray = cachePath.toLocal8Bit();
+    _cacheDirectory.setPath(cachePath);
+    return NormSetCacheDirectory(_normInstanceHandle, cachePathByteArray.constData());
 }
 
 bool QNormTransport::setFragmentation(bool fragmentation)

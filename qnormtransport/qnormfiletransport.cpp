@@ -1,12 +1,9 @@
-#include <protoDefs.h>
+#include <protoDefs.h> // Defines PATH_MAX and MIN()
 #include <QByteArray>
 #include <QDebug>
+#include <QDirIterator>
 #include <QFileInfo>
 #include "qnormfiletransport.h"
-
-#ifndef MIN
-#define MIN(X,Y) ((X<Y)?(X):(Y))
-#endif //!MIN
 
 //
 // Stream of files transported by NORM
@@ -16,13 +13,16 @@
 // Read the name of a received file from the stream.
 //
 QNormFileTransport::QNormFileTransport(const char *address, unsigned short port, NormNodeId normNodeId, QObject *parent) :
-    QNormTransport(address, port, normNodeId, parent)
+    QNormTransport(address, port, normNodeId, parent),
+    _directoryIterator(0)
 {
 }
 
 QNormFileTransport::~QNormFileTransport()
 {
-
+    if (_directoryIterator)
+        delete _directoryIterator;
+    _directoryIterator = 0;
 }
 
 // Put the name of the newly received file into _readBuffer.
@@ -38,6 +38,52 @@ void QNormFileTransport::appendToReadBuffer(NormEvent *event)
     } else {
         qCritical() << "QNormFileTransport::appendToReadbuffer() invalid file name";
     }
+}
+
+const QString QNormFileTransport::currentFile()
+{
+    return _currentFile;
+}
+
+bool QNormFileTransport::hasNextFile() {
+    return ((_directoryIterator && _directoryIterator->hasNext()) ||
+            ! _fileNameQueue.isEmpty());
+}
+
+const QString QNormFileTransport::nextFile()
+{
+    QString answer;
+
+    if (_directoryIterator && _directoryIterator->hasNext()) {
+        answer = _currentFile = _directoryIterator->next();
+
+    } else if (! _fileNameQueue.isEmpty()) {
+        if (_directoryIterator) {
+            delete _directoryIterator;
+            _directoryIterator = 0;
+        }
+
+        while (! _fileNameQueue.isEmpty()) {
+            QString f = _fileNameQueue.first();
+            QFileInfo fInfo(f);
+            if (fInfo.isReadable()) {
+                if (fInfo.isFile()) {
+                    answer = _currentFile = f;
+                    _fileNameQueue.removeFirst();
+                } else if (fInfo.isDir()) {
+                    _directoryIterator = new QDirIterator(f, QDir::Files|QDir::Readable,
+                                                          QDirIterator::Subdirectories);
+                    if (_directoryIterator->hasNext()) {
+                        answer = _currentFile = _directoryIterator->next();
+                    }
+
+                    _fileNameQueue.removeFirst();
+                }
+            }
+        }
+    }
+
+    return answer;
 }
 
 void QNormFileTransport::normRxObjectCompleted(NormEvent *event)
@@ -76,24 +122,40 @@ void QNormFileTransport::normRxObjectInfo(NormEvent *event) {
     // confuse him.
     //
     // Rename rx file using newly received info
-    QString fileName(cacheDirectory());
-    fileName.append("/");
+    const QDir *cacheDir = cacheDirectory();
 
     char newName[PATH_MAX];
     UINT16 len = NormObjectGetInfoLength(event->object);
     len = MIN(len, PATH_MAX);
     NormObjectGetInfo(event->object, newName, len);
 
-    fileName.append(newName);
+    QString newFileName = cacheDir->absoluteFilePath(newName);
 
-    // Deal with concurrent rx name collisions
-    // (TBD) and implement overwrite policy
+    // TODO: Deal with concurrent rx name collisions
+    //       and implement overwrite policy
     //       and cache files in cache mode
+    //
+    // TODO: This is a natural place to ask for user input
+    //       about receiving the file, and about overwriting
+    //       an existing file of the same name.
+    //
+    char nameBuffer[PATH_MAX]; // PATH_MAX is defined in <protoDefs.h>
+    bool validFileName = NormFileGetName(event->object,
+                                         nameBuffer, PATH_MAX);
+    if (validFileName) {
+        QString oldFileName(nameBuffer);
+        qDebug() << "QNormFileTransport::normRxObjectInfo(): Renaming "
+                 << oldFileName << " to " << newFileName;
 
-    if (! NormFileRename(event->object, fileName.toAscii().data()))
+    } else {
+        qCritical() << "QNormFileTransport::normRxObjectInfo(): Renaming <invalid file name> to "
+                    << newFileName;
+    }
+    QByteArray newFileNameByteArray = newFileName.toLocal8Bit();
+    if (! NormFileRename(event->object, newFileNameByteArray.data()))
     {
         qCritical() << "QNormFileTransport::normRxObjectInfo(): Error renaming rx file: "
-                    << fileName;
+                    << newFileName;
     }
 }
 
@@ -101,18 +163,21 @@ void QNormFileTransport::normRxObjectNew(NormEvent *event)
 {
     NormObjectType objectType = NormObjectGetType(event->object);
 
+    qDebug() << "QNormFileTransport::normRxObjectNew()";
+
     if (NORM_OBJECT_FILE == objectType) {
-        char nameBuffer[PATH_MAX]; // PATH_MAX is defined in "protokit.h"
+        char nameBuffer[PATH_MAX]; // PATH_MAX is defined in <protoDefs.h>
         bool validFileName = NormFileGetName(event->object,
                                              nameBuffer, PATH_MAX);
+        // XXX At this point, the file probably has a temporary name
+        //     supplied by the NORM protocol engine.  If that's so,
+        //     we'll have to notify the user again when the file's
+        //     real name arrives in normRxObjectInfo().
+        //
         if (validFileName) {
             QString fileName(nameBuffer);
-
-            // TODO: include event->object so that
-            // the receiver of the newFile signal
-            // can cancel the NormObject if it
-            // does not wish to receive the file.
-            emit newFile(fileName);
+            qDebug() << "QNormFileTransport::normRxObjectNew() " << fileName;
+            emit newFile(fileName, event->object);
         } else {
             qCritical() << "QNormFileTransport::normRxObjectNew() NormEvent contained invalid file name";
             NormObjectCancel(event->object);
@@ -162,7 +227,7 @@ void QNormFileTransport::normRxObjectUpdated(NormEvent *event)
         else if (NORM_OBJECT_NONE == objectType) type = "INVALID";
         else type = QString("Unknown object type %1").arg(objectType);
 
-        qCritical() << "QNormFileTransport::normRxObjectNew(): Received unexpected object: "
+        qCritical() << "QNormFileTransport::normRxObjectUpdated(): Received unexpected object: "
                     << type;
 
         NormObjectCancel(event->object);
@@ -171,12 +236,28 @@ void QNormFileTransport::normRxObjectUpdated(NormEvent *event)
 
 void QNormFileTransport::normTxObjectSent(NormEvent *event)
 {
-    // TODO: enqueue the next file
-    // TODO: emit a signal that identifies the end of transmission of the file.
+    char nameBuffer[PATH_MAX];
+    // BUG: assumes that object is a NormFile
+    if (NormFileGetName(event->object, nameBuffer, PATH_MAX)) {
+        QString fileName(nameBuffer);
+        //
+        // It's safe to print fileName because NormFileGetName()
+        // ensures that it is zero-terminated.
+        //
+        qDebug() << "normTxObjectSent(): Sent file " << fileName;
+    } else {
+        qDebug() << "normTxObjectSent(): SHOULDN'T HAPPEN! Sent file but its name isn't valid.  This is a bug.";
+    }
+
+    emit objectSent(event->object);
 }
 
 void QNormFileTransport::normTxQueueEmpty(NormEvent *event)
 {
+    // XXX Will normTxQueueEmpty() and normTxQueueVacancy() as implemented
+    //     keep norm's tx queue sufficiently full? Will this implementation
+    //     miss any opportunity to write?
+    //
     // XXX Is this the right place to emit readyWrite()?
     if (0 == _fileNameQueue.size()) {
         emit readyWrite();
@@ -187,6 +268,10 @@ void QNormFileTransport::normTxQueueEmpty(NormEvent *event)
 
 void QNormFileTransport::normTxQueueVacancy(NormEvent *event)
 {
+    // XXX Will normTxQueueEmpty() and normTxQueueVacancy() as implemented
+    //     keep norm's tx queue sufficiently full? Will this implementation
+    //     miss any opportunity to write?
+    //
     // XXX Is this the right place to emit readyWrite()?
     if (0 == _fileNameQueue.size()) {
         emit readyWrite();
@@ -199,14 +284,18 @@ void QNormFileTransport::normTxQueueVacancy(NormEvent *event)
 // Enqueue as many from _fileNameQueue as will fit.
 void QNormFileTransport::sendFiles()
 {
-    while (_fileNameQueue.size() > 0) {
-       const char *fileName = _fileNameQueue.first().constData();
-       NormObjectHandle objectHandle =
-               NormFileEnqueue(_normSessionHandle,
-                               fileName,
-                               // Send the file name and its length as
-                               // the NORM_INFO.
-                               fileName, _fileNameQueue.first().size() + 1);
+    while (hasNextFile()) {
+        QString fileName = nextFile();
+        QByteArray fileNameByteArray = fileName.toLocal8Bit();
+        const char *fileNameData = fileNameByteArray.data();
+
+        NormObjectHandle objectHandle =
+                NormFileEnqueue(_normSessionHandle,
+                                fileNameData,
+                                // The file name is the NORM_INFO.
+                                // Length includes terminating
+                                // zero.
+                                fileNameData, fileName.size() + 1);
 
         if (NORM_OBJECT_INVALID == objectHandle) {
             // Error handling.
@@ -218,6 +307,7 @@ void QNormFileTransport::sendFiles()
             //
             // 2. NORM couldn't create a NormFileObject.
             //    This is an out-of-memory condition. Try later.
+            //    There is no way to distinguish between this and #4.
             //
             // 3. NORM couldn't open the file.
             //    The user doesn't have permission to read the file
@@ -228,19 +318,19 @@ void QNormFileTransport::sendFiles()
             //    changed without the sender's knowledge.  We check
             //    here and complain if the file isn't readable.
             //
+            // 4. NORM couldn't enqueue the file for transmission.
+            //    The queue is full. Try later.
+            //    There is no way to distinguish between this and #2.
+            //
 
-            QString fileName(_fileNameQueue.first().constData());
+            // Case #3: Can't open the file.
             QFileInfo info(fileName);
-            if (! info.isReadable()) {
-                qCritical() << "QNormFileTransport::sendFiles() skipping unreadable file "
+            if (!info.exists() || !info.isReadable() || !info.isFile()) {
+                qCritical() << "QNormFileTransport::sendFiles() skipping non-existent or unreadable file or directory "
                             << fileName;
-                _fileNameQueue.removeFirst();
             } else {
-
-                //
-                // 4. NORM couldn't enqueue the file for transmission.
-                //    The queue is full. Try later.
-                //
+                // Case #2 and case #4: assume norm's tx queue is full.
+                // Wait for normTxQueueEmpty() or normTxQueueVacancy().
 
                 break;
             }
@@ -248,13 +338,12 @@ void QNormFileTransport::sendFiles()
             // TODO: emit a signal about the successful enqueuing of this file.
 
             qDebug() << "QNormFileTransport::sendFiles() enqueued file "
-                     << _fileNameQueue.first().constData();
-            _fileNameQueue.removeFirst();
+                     << fileName;
         }
     }
 }
 
-// Expects null-terminated strings in *data.
+// Expects newline-terminated strings in *data.
 // Consumes all such strings up to the last null.
 // Returns that number.
 //
@@ -269,19 +358,32 @@ qint64 QNormFileTransport::writeData(const char *data, qint64 len)
     // and there are some bytes to consume.
     if (isSender() && (len > 0) ) {
         QByteArray b(data, len);
-        QList<QByteArray> fileNames = b.split(0);
+        QList<QByteArray> fileNames = b.split('\n');
         answer = len;
 
-        if (0 != data[len -1]) { // XXX Is this a bug?
-            qCritical("QNormFileTransport::writeData() data does not end in 0: %*s", len, data);
+        if ('\n' != data[len -1]) { // XXX Does this condition indicate a bug?
+            qCritical("QNormFileTransport::writeData() data does not end in \\n: %*s", len, data);
             answer -= fileNames.last().size();
             fileNames.removeLast();
         }
 
-        if (fileNames.size() > 0) {
-            _fileNameQueue.append(fileNames);
+        //
+        // QByteArray.split("abcde\n") produces a QList<QByteArray> of two elements:
+        // "abcde" and "".  The last one isn't a valid file name, so throw it away.
+        //
+        if (0 == fileNames.last().length()) {
+            fileNames.removeLast();
+        }
+
+        // TODO: Consider removing all zero-length elements of fileNames.
+
+        for (int i=0; i < fileNames.size(); i++) {
+            QString s(fileNames.at(i));
+            _fileNameQueue.append(s);
         }
     }
+
+    sendFiles();
 
     return answer;
 }

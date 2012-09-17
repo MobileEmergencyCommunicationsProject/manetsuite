@@ -9,7 +9,10 @@ SUBDIRS = \
     normApp \
     protolib \
     qnormtransport \
-    qnormtransporttest
+    qnormtransporttest \
+    qnormfiletransporttest \
+    normFileRecv \
+    normFileSend
 
 OTHER_FILES += \
     qtc_packaging/debian_harmattan/rules \
@@ -27,7 +30,9 @@ OTHER_FILES += \
     qtc_packaging/debian_fremantle/changelog
 
 mgen.depends = protolib
+mping.depends = protolib norm qnormtransport
 nrlolsr.depends = protolib
 nrlsmf.depends = protolib
+qnormfiletransporttest = qnormtransport norm protolib
 qnormtransport.depends = norm protolib
 qnormtransporttest.depends = qnormtransport norm protolib

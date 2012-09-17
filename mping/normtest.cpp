@@ -137,8 +137,9 @@ void NormTest::update()
         // it should write the remaining bytes.
 
         QString msg = QString("Message %1").arg(_sequenceNumber);
+        QByteArray msgByteArray = msg.toLocal8Bit();
         _sequenceNumber ++;
-        numBytes = _stream->write(msg.toAscii().constData(), msg.length() + 1);
+        numBytes = _stream->write(msgByteArray.constData(), msg.length() + 1);
         _readyWrite = ((msg.length()+ 1) == numBytes);
 
         emit newMessage(msg, nextColor());

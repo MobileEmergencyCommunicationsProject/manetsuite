@@ -3,6 +3,7 @@
 
 #include <normApi.h>
 #include <QByteArray>
+#include <QDir>
 #include <QIODevice>
 #include "qnormtransport_global.h"
 
@@ -70,7 +71,7 @@ public:
     static const unsigned char QNORMTRANSPORT_DEFAULT_SENDER_BLOCK_SIZE = 64;
     static const unsigned long QNORMTRANSPORT_DEFAULT_SENDER_BUFFER_SPACE = 1024 * 1024;
     static const unsigned char QNORMTRANSPORT_DEFAULT_SENDER_NUM_PARITY = 16;
-    static const unsigned short QNORMTRANSPORT_DEFAULT_SENDER_SEGMENT_SIZE = 4096;
+    static const unsigned short QNORMTRANSPORT_DEFAULT_SENDER_SEGMENT_SIZE = 1400; //4096;
     static const NormSessionId QNORMTRANSPORT_DEFAULT_SENDER_SESSION_ID = 1;
 
     //
@@ -86,7 +87,7 @@ public:
 
     virtual qint64 bytesAvailable();
 
-    const char *cacheDirectory();
+    const QDir *cacheDirectory();
 
     virtual void close();
 
@@ -317,7 +318,7 @@ public:
 
     virtual bool open(OpenMode mode);
 
-    bool setCacheDirectory(const char* cachePath);
+    bool setCacheDirectory(const QString & cachePath);
 
     bool setFragmentation(bool fragmentation);
 
@@ -385,7 +386,7 @@ protected:
     qint64 writeData(const char *data, qint64 len);
 
 private:
-    char *_cacheDirectory;
+    QDir _cacheDirectory;
     bool _normSessionIsReceiver;
     bool _normSessionIsSender;
 };
