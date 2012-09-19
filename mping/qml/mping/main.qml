@@ -1,23 +1,30 @@
 /*
   mping is for testing QNormTransportStream.
 
-  It opens with a screen that has two buttons, SEND and RECEIVE.
-  Pressing the SEND button transitions to the send screen.
+  It opens with a screen that has three buttons, RECEIVE, SEND, and STOP. The
+  RECEIVE and SEND buttons are green. The STOP button is white. Below the
+  buttons is an empty box with a blue border.
 
-  The send screen contains a button, STOP, and a display.
-  The app sends a message every second until the STOP button is pressed.
-  The message contains a number. The display shows the value of the number.
-  The number increases by one each time the app sends a message.
-  Pressing the STOP button ends transmission, kills the transport, and
-  transitions to the main screen.
+  The colors green, red, and white were chosen deliberately. In the USA, at
+  least, green indicates "go!" and red indicates "stop!". White was chosen to
+  indicate a choice that is not available.
 
-  Pressing the RECEIVE button transitions to the receive screen.
+  To test QNormTransportStream in the role of the sender, press the SEND
+  button. The RECEIVE button's background changes to white to indicate that it
+  is not usable. The STOP button's background changes to red to indicate that
+  it is usable. The app creates a NORM stream and sends short text messages
+  over it at one-second intervals. The app prints each message as it is written
+  into the QNormTransportStream. The output text alternates between read and
+  green. This continues until the user presses the STOP button.
 
-  The receive screen contains a button, STOP, and a display.
-  Whenever the app receives a message, it displays the contents
-  in the display.
-  Pressing the STOP button ends reception, kills the transport, and
-  transitions to the main screen.
+  To test QNormTransportStream in the role of receiver, press the RECEIVE
+  button. The SEND button's background changes to white to indicate that it is
+  not usable. The STOP button's background changes to red to indicate that it
+  is usable. The app creates a NORM stream and begins reading from it, printing
+  each message as it arrives. The output alternates between red and green.
+  Messages are printed individually. Should consecutive messages arrive
+  together, they are printed in the same color. This continues until the user
+  presses the STOP button.
 
   In this version, the mcast address and port are fixed.
   */

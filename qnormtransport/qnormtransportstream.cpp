@@ -91,15 +91,9 @@ void QNormTransportStream::normRxObjectCompleted(NormEvent *event)
         appendToReadBuffer(event);
         emit readyRead();
     } else {
-        QString type;
-
-        if (NORM_OBJECT_DATA == objectType) type = "OBJECT";
-        else if (NORM_OBJECT_FILE == objectType) type = "FILE";
-        else if (NORM_OBJECT_NONE == objectType) type = "INVALID";
-        else type = QString("Unknown object type %1").arg(objectType);
 
         qCritical() << "QNormTransportStream::normRxObjectCompleted(): Received unexpected object: "
-                    << type;
+                    << QNormTransport::objectTypeToQString(objectType);
     }
 }
 
@@ -116,15 +110,9 @@ void QNormTransportStream::normRxObjectNew(NormEvent *event)
         appendToReadBuffer(event);
         emit readyRead();
     } else {
-        QString type;
-
-        if (NORM_OBJECT_DATA == objectType) type = "OBJECT";
-        else if (NORM_OBJECT_FILE == objectType) type = "FILE";
-        else if (NORM_OBJECT_NONE == objectType) type = "INVALID";
-        else type = QString("Unknown object type %1").arg(objectType);
 
         qCritical() << "QNormTransportStream::normRxObjectNew(): Received unexpected object: "
-                    << type;
+                    << QNormTransport::objectTypeToQString(objectType);
 
         NormObjectCancel(event->object);
     }
@@ -143,39 +131,33 @@ void QNormTransportStream::normRxObjectUpdated(NormEvent *event)
         // Shouldn't happen because we cancel the other kinds of object in
         // normRxObjectNew().
         //
-        QString type;
-
-        if (NORM_OBJECT_DATA == objectType) type = "OBJECT";
-        else if (NORM_OBJECT_FILE == objectType) type = "FILE";
-        else if (NORM_OBJECT_NONE == objectType) type = "INVALID";
-        else type = QString("Unknown object type %1").arg(objectType);
 
         qCritical() << "QNormTransportStream::normRxObjectUpdated(): Received unexpected object: "
-                    << type;
+                    << QNormTransport::objectTypeToQString(objectType);
     }
 }
 void QNormTransportStream::normTxObjectPurged(NormEvent *event)
 {
-    // emit something
+    // TODO: emit something?
 //    qDebug() << "QNormTransportStream::normTxObjectPurged";
 }
 
 void QNormTransportStream::normTxObjectSent(NormEvent *event)
 {
-    // emit something
+    // TODO: emit something?
 //    qDebug() << "QNormTransportStream::normTxObjectSent";
 }
 
 void QNormTransportStream::normTxQueueEmpty(NormEvent *event)
 {
-    // emit something to tell the base class that it's possible to write.
+    // tell the base class that it's possible to write.
 //    qDebug() << "QNormTransportStream::normTxQueueEmpty";
     emit readyWrite();
 }
 
 void QNormTransportStream::normTxQueueVacancy(NormEvent *event)
 {
-    // emit something to tell the base class that it's possible to write.
+    // tell the base class that it's possible to write.
 //    qDebug() << "QNormTransportStream::normTxQueueVacancy";
     emit readyWrite();
 }
@@ -217,9 +199,8 @@ void QNormTransportStream::setPushEnable(bool pushEnable)
     NormStreamSetPushEnable(_streamHandle, pushEnable);
 }
 
+//
 // Writes as much of *data as possible into the stream.
-// Sets an end-of-message indication on the stream if
-// it was able to write all of *data.
 //
 qint64 QNormTransportStream::writeData(const char *data, qint64 len)
 {

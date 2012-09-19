@@ -12,7 +12,8 @@ SUBDIRS = \
     qnormtransporttest \
     qnormfiletransporttest \
     normFileRecv \
-    normFileSend
+    normFileSend \
+    mcshare
 
 OTHER_FILES += \
     qtc_packaging/debian_harmattan/rules \

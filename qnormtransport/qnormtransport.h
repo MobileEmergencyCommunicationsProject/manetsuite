@@ -316,6 +316,8 @@ public:
       */
     virtual void normTxWatermarkCompleted(NormEvent *event);
 
+    static QString objectTypeToQString(NormObjectType type);
+
     virtual bool open(OpenMode mode);
 
     bool setCacheDirectory(const QString & cachePath);

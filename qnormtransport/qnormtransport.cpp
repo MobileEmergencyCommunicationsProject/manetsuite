@@ -144,15 +144,9 @@ void QNormTransport::normRxObjectAborted(NormEvent *event)
 
 void QNormTransport::normRxObjectCompleted(NormEvent *event)
 {
-    NormObjectType objectType = NormObjectGetType(event->object);
-    QString type;
 
-    if (NORM_OBJECT_DATA == objectType) type = "OBJECT";
-    else if (NORM_OBJECT_FILE == objectType) type = "FILE";
-    else if (NORM_OBJECT_NONE == objectType) type = "INVALID";
-    else type = QString("Unknown object type %1").arg(objectType);
-
-    qDebug() << "QNormTransport::normRxObjectUpdated Completed " << type;
+    qDebug() << "QNormTransport::normRxObjectUpdated Completed "
+             << QNormTransport::objectTypeToQString(NormObjectGetType(event->object));
 }
 
 void QNormTransport::normRxObjectInfo(NormEvent *event)
@@ -162,28 +156,16 @@ void QNormTransport::normRxObjectInfo(NormEvent *event)
 
 void QNormTransport::normRxObjectNew(NormEvent *event)
 {
-    NormObjectType objectType = NormObjectGetType(event->object);
-    QString type;
 
-    if (NORM_OBJECT_DATA == objectType) type = "OBJECT";
-    else if (NORM_OBJECT_FILE == objectType) type = "FILE";
-    else if (NORM_OBJECT_NONE == objectType) type = "INVALID";
-    else type = QString("Unknown object type %1").arg(objectType);
-
-    qDebug() << "QNormTransport::normRxObjectNew New " << type;
+    qDebug() << "QNormTransport::normRxObjectNew New "
+             << QNormTransport::objectTypeToQString(NormObjectGetType(event->object));
 }
 
 void QNormTransport::normRxObjectUpdated(NormEvent *event)
 {
-    NormObjectType objectType = NormObjectGetType(event->object);
-    QString type;
 
-    if (NORM_OBJECT_DATA == objectType) type = "OBJECT";
-    else if (NORM_OBJECT_FILE == objectType) type = "FILE";
-    else if (NORM_OBJECT_NONE == objectType) type = "INVALID";
-    else type = QString("Unknown object type %1").arg(objectType);
-
-    qDebug() << "QNormTransport::normRxObjectUpdated " << type;
+    qDebug() << "QNormTransport::normRxObjectUpdated "
+             << QNormTransport::objectTypeToQString(NormObjectGetType(event->object));
 }
 
 void QNormTransport::normTxCmdSent(NormEvent *event)
@@ -226,6 +208,18 @@ void QNormTransport::normTxRateChanged(NormEvent *event)
 void QNormTransport::normTxWatermarkCompleted(NormEvent *event)
 {
     qDebug() << "QNormTransport::normTxWatermarkCompleted";
+}
+
+QString QNormTransport::objectTypeToQString(NormObjectType type)
+{
+    QString answer;
+
+    if (NORM_OBJECT_DATA == type) answer = "OBJECT";
+    else if (NORM_OBJECT_FILE == type) answer = "FILE";
+    else if (NORM_OBJECT_NONE == type) answer = "INVALID";
+    else answer = QString("Unknown object type %1").arg(type);
+
+    return answer;
 }
 
 bool QNormTransport::open(QIODevice::OpenMode mode)

@@ -100,15 +100,9 @@ void QNormFileTransport::normRxObjectCompleted(NormEvent *event)
         appendToReadBuffer(event);
         emit readyRead();
     } else {
-        QString type;
-
-        if (NORM_OBJECT_DATA == objectType) type = "OBJECT";
-        else if (NORM_OBJECT_STREAM == objectType) type = "STREAM";
-        else if (NORM_OBJECT_NONE == objectType) type = "INVALID";
-        else type = QString("Unknown object type %1").arg(objectType);
 
         qCritical() << "QNormFileTransport::normRxObjectCompleted(): Received unexpected object: "
-                    << type;
+                    << QNormTransport::objectTypeToQString(objectType);
         NormObjectCancel(event->object);
     }
 }
@@ -183,15 +177,9 @@ void QNormFileTransport::normRxObjectNew(NormEvent *event)
             NormObjectCancel(event->object);
         }
     } else {
-        QString type;
-
-        if (NORM_OBJECT_DATA == objectType) type = "OBJECT";
-        else if (NORM_OBJECT_STREAM == objectType) type = "STREAM";
-        else if (NORM_OBJECT_NONE == objectType) type = "INVALID";
-        else type = QString("Unknown object type %1").arg(objectType);
 
         qCritical() << "QNormFileTransport::normRxObjectNew(): Received unexpected object: "
-                    << type;
+                    << QNormTransport::objectTypeToQString(objectType);
 
         NormObjectCancel(event->object);
     }
@@ -220,15 +208,9 @@ void QNormFileTransport::normRxObjectUpdated(NormEvent *event)
             NormObjectCancel(event->object);
         }
     } else {
-        QString type;
-
-        if (NORM_OBJECT_DATA == objectType) type = "OBJECT";
-        else if (NORM_OBJECT_STREAM == objectType) type = "STREAM";
-        else if (NORM_OBJECT_NONE == objectType) type = "INVALID";
-        else type = QString("Unknown object type %1").arg(objectType);
 
         qCritical() << "QNormFileTransport::normRxObjectUpdated(): Received unexpected object: "
-                    << type;
+                    << QNormTransport::objectTypeToQString(objectType);
 
         NormObjectCancel(event->object);
     }
