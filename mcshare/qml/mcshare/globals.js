@@ -1,0 +1,1 @@
+var chosenFiles = new Array()

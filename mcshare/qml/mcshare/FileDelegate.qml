@@ -9,6 +9,7 @@ import QtQuick 1.1
 // part of the MouseArea.
 Component {
     id: fileDelegate
+
     Rectangle {
         id: wrapper
         border.color:  "black"
