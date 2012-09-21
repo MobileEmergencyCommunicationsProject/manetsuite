@@ -6,6 +6,7 @@ import Qt.labs.folderlistmodel 1.0
 Rectangle {
     id: container
     property alias count: folderModel.count
+    property alias currentIndex : listView.currentIndex
     property alias flickableDirection: listView.flickableDirection
     property alias folder: folderModel.folder
     property alias nameFilters: folderModel.nameFilters
@@ -22,7 +23,7 @@ Rectangle {
         id: titleBar
         anchors.top: parent.top
         color: "grey"
-        height: 66
+        height: 33 // 66
         width: parent.width
 
         Text {

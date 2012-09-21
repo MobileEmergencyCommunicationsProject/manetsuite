@@ -3,174 +3,228 @@ import QtQuick 1.1
 import "globals.js" as Globals
 
 Rectangle {
-    id: rectangle1
+    id: mcshare
     width: 360
     height: 360
 
-    // fileChooser shows all of the files in a directory
-    // hierarchy.  Select a file to add it to the list
-    // of selected files displayed in chosenFiles, below.
-    FileChooser {
-        id: fileChooser
-        anchors.top: parent.top
-        anchors.left:parent.left
-        anchors.right:parent.right
-        height: (parent.height - buttonRow.height) / 2
-        flickableDirection: Flickable.AutoFlickDirection
-        folder: documentsPath
-        nameFilters: ["*"]
-        title: qsTr("Choose files to share")
-        onSelectedFileChanged: {
-            if (-1 == Globals.chosenFiles.indexOf(selectedFile)) {
-                list_view1.model.append({"fileName":selectedFile})
-                list_view1.currentIndex = list_view1.count - 1
-                Globals.chosenFiles.push(selectedFile)
-            }
+    /*
+      TODO: signals from C++
+
+      newMessage(receiver, text, color): Tell the receiver to
+                    append colored text to itself. One receiver
+                    is "receiver".  The other is "sender".
+
+      RenameFile(oldName, newName, objectHandle): Ask if it's OK to rename the file.
+                    Send the answer back to C++.
+                    Append the result to the received files list.
+
+      */
+
+    /*
+      TODO: functions to C++
+
+      cancel(objectHandle): stop receiving or sending a file.
+
+      startReceiver()
+      stopReceiver()
+      startSender()
+      stopSender()
+
+      write(): write some text into the device.
+
+      */
+
+    MultiSelectionFileDialog {
+        id: fileSelector
+        visible: false
+
+        // Extra actions to execute when the
+        // Accept button is clicked
+        //
+        function acceptButtonFunction() {
+            mcshare.state = ""
+        }
+
+        // Extra actions to execute when the
+        // Cancel button is clicked
+        //
+        function cancelButtonFunction() {
+            mcshare.state = ""
+        }
+
+    }
+
+    ReceiveFiles {
+        id:receiveFiles
+        buttonColor: "light blue"
+        startButtonText: qsTr("Start Receiver")
+        stopButtonText: qsTr("Stop Receiver")
+        title: qsTr("Receive Files")
+        visible: false
+
+        // Extra actions to execute when the
+        // button is clicked
+        //
+        function backButtonClickedFunction() {
+            console.debug("Back")
+            mcshare.state = ""
+        }
+
+        function startButtonClickedFunction() {
+            console.debug("Start Receiver")
+        }
+
+        function stopButtonClickedFunction() {
+            console.debug("Stop Receiver")
         }
     }
 
-    // chosenFiles holds the names of the files that
-    // the user selected in fileChooser, above.
-    // Select an entry in the chosenFiles to remove
-    // it.
-    Rectangle {
-        id: chosenFiles
-        anchors.top: fileChooser.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: (parent.height - buttonRow.height) / 2
+    ReceiveFiles {
+        id:sendFiles
+        buttonColor: "light blue"
+        startButtonText: qsTr("Start Sender")
+        stopButtonText: qsTr("Stop Sender")
+        title: qsTr("Send Files")
+        visible: false
 
-        function clear() {
-            list_view1.model.clear()
+        // Extra actions to execute when the
+        // button is clicked
+        //
+        function backButtonClickedFunction() {
+            console.debug("Back")
+            mcshare.state = ""
         }
 
+        function startButtonClickedFunction() {
+            console.debug("Start Sender")
+        }
+
+        function stopButtonClickedFunction() {
+            console.debug("Stop Sender")
+        }    }
+
+    Column {
+        id: column1
+        property int borderWidth: 2
+        property color buttonColor: "light blue"
+        anchors.fill: parent
+        anchors.margins: 2
+        spacing: 6
+
         Rectangle {
-            id: titleBar
-            anchors.top: parent.top
-            color: "grey"
-            height: 66
+            id: chooseButton
+            border.width: column1.borderWidth
+            color: column1.buttonColor
+            height: parent.height / 3
             width: parent.width
 
             Text {
-                id: titleBarText
-                anchors.centerIn: parent
-                text: qsTr("Chosen Files")
-                font.bold: true
-                font.pixelSize: 26
-                font.family: "Nokia Pure Text"
-                horizontalAlignment: Text.AlignHCenter
-            }
-        }
-
-        ListView {
-            id: list_view1
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: titleBar.bottom
-            clip: true
-            delegate: fileDelegate
-            highlightFollowsCurrentItem: true
-            interactive: true
-            model: listModel
-
-            Component {
-                id: fileDelegate
-
-                Rectangle {
-                    id: wrapper
-                    border.color:  "black"
-                    border.width: ListView.isCurrentItem ? 2 : 0
-                    color: ListView.isCurrentItem ? "grey" : "white"
-                    height: entry.height + 15
-                    radius: 10
-                    width: parent.width
-
-                    Text {
-                        id: entry
-                        anchors.verticalCenter: wrapper.verticalCenter
-                        font.family: "Nokia Pure Text"
-                        font.pixelSize: 24
-                        text: fileName
-                        color: wrapper.ListView.isCurrentItem ? "white" : "black"
-                    }
-
-                    MouseArea {
-                        anchors.fill: wrapper
-                        onClicked: {
-                            parent.ListView.view.currentIndex = index
-
-                            var idx = Globals.chosenFiles.indexOf(fileName)
-                            Globals.chosenFiles.splice(idx, 1)
-                            list_view1.model.remove(index)
-                            list_view1.currentIndex = list_view1.count - 1
-                        }
-                    }
-                }
-            }
-
-            ListModel {
-                id:listModel
-            }
-        }
-    }
-
-    Row {
-        id: buttonRow
-        anchors.right: parent.right
-        anchors.left: parent.left
-        anchors.bottom: parent.bottom
-        height: 50
-        spacing: 5
-
-        Rectangle {
-            id: acceptButton
-            width: parent.width / 2
-            height: parent.height
-            color: "green"
-
-            Text {
                 id: text1
-                text: qsTr("Accept")
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("Choose")
                 font.pixelSize: 12
             }
 
             MouseArea {
-                id: acceptButtonMouseArea
-                anchors.fill: acceptButton
+//                id: chooseButtonMouseArea
+                anchors.fill: parent
                 onClicked: {
-                    // print the contents of the chosenFiles list model.
-                    for (var i=0; i < Globals.chosenFiles.length; i++) {
-                        console.debug(Globals.chosenFiles[i])
-                    }
+                    mcshare.state = "chooseState"
+                    console.debug("choose")
                 }
             }
         }
 
         Rectangle {
-            id: cancelButton
-            width: parent.width / 2
-            height: parent.height
-            color: "red"
+            id: receiveButton
+            border.width: column1.borderWidth
+            color: column1.buttonColor
+            height: parent.height / 3
+            width: parent.width
+
+            Text {
+                id: text3
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("Receive")
+                font.pixelSize: 12
+            }
+
+            MouseArea {
+//                id: receiveButtonMouseArea
+                anchors.fill: parent
+                onClicked: {
+                    mcshare.state = "receiveState"
+                    console.debug("receive")
+                }
+            }
+        }
+
+        Rectangle {
+            id: sendButton
+            border.width: column1.borderWidth
+            color: column1.buttonColor
+            height: parent.height / 3
+            width: parent.width
 
             Text {
                 id: text2
-                text: qsTr("Cancel")
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("Send")
                 font.pixelSize: 12
             }
 
             MouseArea {
-                id: cancelButtonMouseArea
-                anchors.fill: cancelButton
+//                id: sendButtonMouseArea
+                anchors.fill: parent
                 onClicked: {
-                    Globals.chosenFiles.length = 0
-                    chosenFiles.clear()
+                    mcshare.state = "sendState"
+                    console.debug("send")
                 }
             }
         }
     }
+
+    states: [
+        State {
+            name: "chooseState"
+            PropertyChanges {
+                target: fileSelector
+                visible: true
+            }
+
+            PropertyChanges {
+                target: column1
+                visible: false
+            }
+        },
+        State {
+            name: "receiveState"
+            PropertyChanges {
+                target: receiveFiles
+                visible: true
+            }
+
+            PropertyChanges {
+                target: column1
+                visible: false
+            }
+        },
+        State {
+            name: "sendState"
+            PropertyChanges {
+                target: sendFiles
+                visible: true
+            }
+
+            PropertyChanges {
+                target: column1
+                visible: false
+            }
+        }
+    ]
+
+
 }
