@@ -30,8 +30,37 @@ CONFIG += qdeclarative-boostable
 # CONFIG += qt-components
 
 # The .cpp file which was generated for your project. Feel free to hack it.
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    normfiletest.cpp
 
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)
 qtcAddDeployment()
+
+HEADERS += \
+    normfiletest.h
+
+unix:!macx:LIBS += $$OUT_PWD/../qnormtransport/libqnormtransport.a \
+    $$OUT_PWD/../norm/libnorm.a \
+    $$OUT_PWD/../protolib/libprotolib.a
+
+INCLUDEPATH += $$PWD/../qnormtransport
+DEPENDPATH += $$PWD/../qnormtransport
+
+win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../qnormtransport/release/qnormtransport.lib
+else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../qnormtransport/debug/qnormtransport.lib
+else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../qnormtransport/libqnormtransport.a
+
+INCLUDEPATH += $$PWD/../norm/include
+DEPENDPATH += $$PWD/../norm
+
+win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../norm/release/norm.lib
+else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../norm/debug/norm.lib
+else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../norm/libnorm.a
+
+INCLUDEPATH += $$PWD/../protolib/include
+DEPENDPATH += $$PWD/../protolib
+
+win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../protolib/release/protolib.lib
+else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../protolib/debug/protolib.lib
+else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../protolib/libprotolib.a

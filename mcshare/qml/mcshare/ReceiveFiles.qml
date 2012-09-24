@@ -6,25 +6,29 @@ Rectangle {
     id: container   
     property alias backButtonText: backButtonText.text
     property color buttonColor: "white"
-    property alias startButtonText: startButtonText.text
-    property alias stopButtonText: stopButtonText.text
+//    property alias startButtonText: startButtonText.text
+//    property alias stopButtonText: stopButtonText.text
     property alias title: titleBarText.text
 
     anchors.fill: parent
     width: 360
     height: 360
 
+    function append(message) {
+        messageListModel.append({"message":message})
+    }
+
     function backButtonClickedFunction () {
         console.debug("BACK")
     }
 
-    function startButtonClickedFunction () {
-        console.debug("START")
-    }
+//    function startButtonClickedFunction () {
+//        console.debug("START")
+//    }
 
-    function stopButtonClickedFunction () {
-        console.debug("STOP")
-    }
+//    function stopButtonClickedFunction () {
+//        console.debug("STOP")
+//    }
 
     Rectangle {
         id: titleBar
@@ -53,7 +57,6 @@ Rectangle {
         border.width: 2
         width: parent.width
 
-        // TODO: Do not show Items that scroll outside of the visible area
         ListView {
             id: messageListView
             anchors.fill: parent
@@ -77,7 +80,7 @@ Rectangle {
                     border.color: "yellow"
 
                     Text {
-                        color: messageColor
+//                        color: messageColor
                         anchors.verticalCenter: parent.verticalCenter
                         text: message
                     }
@@ -95,63 +98,63 @@ Rectangle {
         property int borderWidth: 2
 
         anchors.bottom: parent.bottom
-//        anchors.top: messageArea.bottom
         height: 50
         spacing: 6
         width: parent.width
 
-        Rectangle {
-            id: startButton
-            border.width: buttonRow.borderWidth
-            color: buttonColor
-            height: parent.height
-            width: parent.width / 3
+//        Rectangle {
+//            id: startButton
+//            border.width: buttonRow.borderWidth
+//            color: buttonColor
+//            height: parent.height
+//            width: parent.width / 3
 
-            Text {
-                id: startButtonText
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-                text: qsTr("Start")
-                font.pixelSize: 12
-            }
+//            Text {
+//                id: startButtonText
+//                anchors.horizontalCenter: parent.horizontalCenter
+//                anchors.verticalCenter: parent.verticalCenter
+//                text: qsTr("Start")
+//                font.pixelSize: 12
+//            }
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    startButtonClickedFunction()
-                }
-            }
-        }
+//            MouseArea {
+//                anchors.fill: parent
+//                onClicked: {
+//                    startButtonClickedFunction()
+//                }
+//            }
+//        }
 
-        Rectangle {
-            id: stopButton
-            border.width: buttonRow.borderWidth
-            color: buttonColor
-            height: parent.height
-            width: parent.width / 3
+//        Rectangle {
+//            id: stopButton
+//            border.width: buttonRow.borderWidth
+//            color: buttonColor
+//            height: parent.height
+//            width: parent.width / 3
 
-            Text {
-                id: stopButtonText
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-                text: qsTr("Stop")
-                font.pixelSize: 12
-            }
+//            Text {
+//                id: stopButtonText
+//                anchors.horizontalCenter: parent.horizontalCenter
+//                anchors.verticalCenter: parent.verticalCenter
+//                text: qsTr("Stop")
+//                font.pixelSize: 12
+//            }
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    stopButtonClickedFunction()
-                }
-            }
-        }
+//            MouseArea {
+//                anchors.fill: parent
+//                onClicked: {
+//                    stopButtonClickedFunction()
+//                }
+//            }
+//        }
 
         Rectangle {
             id: backButton
             border.width: buttonRow.borderWidth
             color: buttonColor
             height: parent.height
-            width: parent.width / 3
+//            width: parent.width / 3
+            width: parent.width // Change this if you change the number of buttons
 
             Text {
                 id: backButtonText

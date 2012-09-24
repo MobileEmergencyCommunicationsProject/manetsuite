@@ -1,5 +1,6 @@
+#include "normfiletest.h"
 #include <QDesktopServices>
-#include <QtDeclarative/QDeclarativeContext>
+#include <QtDeclarative>
 #include <QtGui/QApplication>
 #include "qmlapplicationviewer.h"
 
@@ -8,6 +9,9 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     QScopedPointer<QApplication> app(createApplication(argc, argv));
     QmlApplicationViewer viewer;
     QDeclarativeContext *context = viewer.rootContext();
+    QString documents;
+
+    qmlRegisterType<NormFileTest>("NormFileTest", 1, 0, "NormFileTest");
 
     // Determine the documentsPath property for the
     // QML app.  The first search for files to share
@@ -24,17 +28,15 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     // The existence of the definition does not
     // imply the existence of the directory.
     //
-    QString documents = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
+    documents = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
     if (documents.isEmpty())
         documents = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
     if (documents.isEmpty())
         documents = "/";
 
     context->setContextProperty("documentsPath", documents);
-
     viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
     viewer.setMainQmlFile(QLatin1String("qml/mcshare/main.qml"));
-
     viewer.showExpanded();
 
     return app->exec();

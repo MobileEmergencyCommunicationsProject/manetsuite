@@ -112,7 +112,7 @@ void QNormFileTransport::normRxObjectInfo(NormEvent *event) {
     //
     // It would be nicer if we could rename the file
     // using Qt's file system abstractions.  Alas,
-    // that work behind NORM's back and it might
+    // that works behind NORM's back and it might
     // confuse him.
     //
     // Rename rx file using newly received info

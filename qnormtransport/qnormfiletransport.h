@@ -28,7 +28,7 @@ class QNormFileTransport : public QNormTransport
 public:
     explicit QNormFileTransport(const char* address, unsigned short port, NormNodeId normNodeId = NORM_NODE_ANY,
                               QObject *parent = 0);
-    ~QNormFileTransport();
+    virtual ~QNormFileTransport();
     
     virtual void normRxObjectCompleted(NormEvent *event);
     virtual void normRxObjectInfo(NormEvent *event);

@@ -1,64 +1,97 @@
 // import QtQuick 1.0 // to target S60 5th Edition or Maemo 5
-import QtQuick 1.1
 import "globals.js" as Globals
+import NormFileTest 1.0
+import QtQuick 1.1
 
 Rectangle {
     id: mcshare
     width: 360
     height: 360
 
-    /*
-      TODO: signals from C++
+    NormFileTest {
+        id: app
 
-      newMessage(receiver, text, color): Tell the receiver to
-                    append colored text to itself. One receiver
-                    is "receiver".  The other is "sender".
-
-      RenameFile(oldName, newName, objectHandle): Ask if it's OK to rename the file.
-                    Send the answer back to C++.
-                    Append the result to the received files list.
-
-      */
+        //
+        // The app is ready for us to send files.
+        //
+        onReadyWrite: {
+            fileSelector.sendFiles()
+        }
+    }
 
     /*
-      TODO: functions to C++
+      Display a yes-no dialog.
+      All arguments are strings.
 
-      cancel(objectHandle): stop receiving or sending a file.
-
-      startReceiver()
-      stopReceiver()
-      startSender()
-      stopSender()
-
-      write(): write some text into the device.
-
+      Return true if the user presses yes.
+      Return false if the user presses no.
       */
+    function dialog(message, yes_button, no_button) {
+        console.debug(message)
+        console.debug("yes=", yes_button)
+        console.debug("no=", no_button)
+        return true
+    }
 
+    /*
+      Append a message to the message are of the
+      receiveFiles or sendFiles page.
+      */
+    function addMessage(destination, message) {
+        if ("receiver" == destination) {
+            receiverPage.append(message)
+        } else if ("sender" == destination) {
+            senderPage.append(message)
+        } else {
+            console.log("addMessage(): destination must be \"receiver\" or \"sender\", not",
+                        destination)
+        }
+    }
+
+    /*
+      Dialog for choosing files to send via NORM. When the user presses the
+      Accept button, give the name of each selected file to the app one at a
+      time until the app knows all file names or the app can't accept any more
+      file names.
+
+      This dialog forgets the names of all unsent file when the user presses
+      the Clear button.
+      */
     MultiSelectionFileDialog {
         id: fileSelector
         visible: false
 
-        // Extra actions to execute when the
-        // Accept button is clicked
+        //
+        // Extra actions to execute when the Accept button is clicked
         //
         function acceptButtonFunction() {
             mcshare.state = ""
+            sendFiles()
         }
 
-        // Extra actions to execute when the
-        // Cancel button is clicked
         //
-        function cancelButtonFunction() {
+        // Extra actions to execute when the Clear button is clicked
+        //
+        function clearButtonFunction() {
             mcshare.state = ""
         }
 
+        function sendFiles() {
+            for(var i in Globals.chosenFiles) {
+                if (app.sendFile(Globals.chosenFiles[i])) {
+                    deselect(Globals.chosenFiles[i])
+                } else {
+                    break
+                }
+            }
+        }
     }
 
     ReceiveFiles {
-        id:receiveFiles
+        id:receiverPage
         buttonColor: "light blue"
-        startButtonText: qsTr("Start Receiver")
-        stopButtonText: qsTr("Stop Receiver")
+//        startButtonText: qsTr("Start Receiver")
+//        stopButtonText: qsTr("Stop Receiver")
         title: qsTr("Receive Files")
         visible: false
 
@@ -70,20 +103,20 @@ Rectangle {
             mcshare.state = ""
         }
 
-        function startButtonClickedFunction() {
-            console.debug("Start Receiver")
-        }
+//        function startButtonClickedFunction() {
+//            console.debug("Start Receiver")
+//        }
 
-        function stopButtonClickedFunction() {
-            console.debug("Stop Receiver")
-        }
+//        function stopButtonClickedFunction() {
+//            console.debug("Stop Receiver")
+//        }
     }
 
     ReceiveFiles {
-        id:sendFiles
+        id:senderPage
         buttonColor: "light blue"
-        startButtonText: qsTr("Start Sender")
-        stopButtonText: qsTr("Stop Sender")
+//        startButtonText: qsTr("Start Sender")
+//        stopButtonText: qsTr("Stop Sender")
         title: qsTr("Send Files")
         visible: false
 
@@ -95,13 +128,14 @@ Rectangle {
             mcshare.state = ""
         }
 
-        function startButtonClickedFunction() {
-            console.debug("Start Sender")
-        }
+//        function startButtonClickedFunction() {
+//            console.debug("Start Sender")
+//        }
 
-        function stopButtonClickedFunction() {
-            console.debug("Stop Sender")
-        }    }
+//        function stopButtonClickedFunction() {
+//            console.debug("Stop Sender")
+//        }
+    }
 
     Column {
         id: column1
@@ -127,7 +161,6 @@ Rectangle {
             }
 
             MouseArea {
-//                id: chooseButtonMouseArea
                 anchors.fill: parent
                 onClicked: {
                     mcshare.state = "chooseState"
@@ -152,7 +185,6 @@ Rectangle {
             }
 
             MouseArea {
-//                id: receiveButtonMouseArea
                 anchors.fill: parent
                 onClicked: {
                     mcshare.state = "receiveState"
@@ -177,7 +209,6 @@ Rectangle {
             }
 
             MouseArea {
-//                id: sendButtonMouseArea
                 anchors.fill: parent
                 onClicked: {
                     mcshare.state = "sendState"
@@ -203,7 +234,7 @@ Rectangle {
         State {
             name: "receiveState"
             PropertyChanges {
-                target: receiveFiles
+                target: receiverPage
                 visible: true
             }
 
@@ -215,7 +246,7 @@ Rectangle {
         State {
             name: "sendState"
             PropertyChanges {
-                target: sendFiles
+                target: senderPage
                 visible: true
             }
 

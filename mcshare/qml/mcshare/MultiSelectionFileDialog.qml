@@ -8,7 +8,7 @@ import "globals.js" as Globals
   Globals.chosenFiles.
 
   A MultiSelectionFileDialog consists of two scrollable windows, one above the
-  other. Below them are two buttons: Accept and Cancel. The upper window is for
+  other. Below them are two buttons: Accept and Clear. The upper window is for
   navigating the file system and choosing a single file. The lower window
   displays the names of the chosen files. To select a file, touch it in the
   upper window. To deselect a file, touch it in the lower window.
@@ -17,10 +17,10 @@ import "globals.js" as Globals
   button is pressed, it invokes acceptButtonFunction() before returning. An
   instance of MultiSelectionFileDialog may have its own acceptButtonFunction().
 
-  Press the Cancel button to discard list of selected files and return. When
-  the Cancel button is pressed, it invokes cancelButtonFunction() before
+  Press the Clear button to discard list of selected files and return. When
+  the Clear button is pressed, it invokes clearButtonFunction() before
   returning. An instance of MultiSelectionFileDialog may have its own
-  acceptButtonFunction().
+  clearButtonFunction().
   */
 Rectangle {
     id: container
@@ -35,9 +35,24 @@ Rectangle {
         console.debug("CANCEL!")
     }
 
-    // fileChooser shows all of the files in a directory
-    // hierarchy.  Select a file to add it to the list
-    // of selected files displayed in chosenFiles, below.
+    function clear() {
+        Globals.chosenFiles.length = 0
+        list_view1.model.clear()
+        list_view1.currentIndex = -1
+        fileChooser.currentIndex = -1
+    }
+
+    function deselect(index, message) {
+        var idx = Globals.chosenFiles.indexOf(message)
+        Globals.chosenFiles.splice(idx, 1)
+        list_view1.model.remove(index)
+        list_view1.currentIndex = list_view1.count - 1
+    }
+
+    //
+    // fileChooser shows all of the files in a directory hierarchy. Select a
+    // file to add it to the list of selected files displayed in chosenFiles,
+    // below.
     FileChooser {
         id: fileChooser
         anchors.top: parent.top
@@ -57,10 +72,10 @@ Rectangle {
         }
     }
 
-    // chosenFiles holds the names of the files that
-    // the user selected in fileChooser, above.
-    // Select an entry in the chosenFiles to remove
-    // it.
+    //
+    // chosenFiles holds the names of the files that the user selected in
+    // fileChooser, above. Select an entry in the chosenFiles to remove it.
+    //
     Rectangle {
         id: chosenFiles
         anchors.top: fileChooser.bottom
@@ -102,6 +117,10 @@ Rectangle {
             interactive: true
             model: listModel
 
+            Component.onCompleted: {
+                flickableDirection = Flickable.HorizontalAndVerticalFlick
+            }
+
             Component {
                 id: fileDelegate
 
@@ -127,11 +146,7 @@ Rectangle {
                         anchors.fill: wrapper
                         onClicked: {
                             parent.ListView.view.currentIndex = index
-
-                            var idx = Globals.chosenFiles.indexOf(fileName)
-                            Globals.chosenFiles.splice(idx, 1)
-                            list_view1.model.remove(index)
-                            list_view1.currentIndex = list_view1.count - 1
+                            deselect(index, fileName)
                         }
                     }
                 }
@@ -197,10 +212,7 @@ Rectangle {
                 id: cancelButtonMouseArea
                 anchors.fill: cancelButton
                 onClicked: {
-                    Globals.chosenFiles.length = 0
-                    list_view1.model.clear()
-                    list_view1.currentIndex = -1
-                    fileChooser.currentIndex = -1
+                    clear()
                     cancelButtonFunction()
                 }
             }
