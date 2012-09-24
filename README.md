@@ -22,13 +22,17 @@ http://cs.itd.nrl.navy.mil/products.
 Here are links to the nightly snapshots of those products:
 
 mgen: http://downloads.pf.itd.nrl.navy.mil/mgen/nightly_snapshots/mgen-svnsnap.tgz
+
 norm: http://downloads.pf.itd.nrl.navy.mil/norm/nightly_snapshots/norm-svnsnap.tgz
+
 nrlolsr: http://downloads.pf.itd.nrl.navy.mil/olsr/nightly_snapshots/nrlolsr-svnsnap.tgz
+
 nrlsmf: http://downloads.pf.itd.nrl.navy.mil/smf/nightly_snapshots/nrlsmf-svnsnap.tgz
+
 protolib: http://downloads.pf.itd.nrl.navy.mil/protolib/nightly_snapshots/protolib-svnsnap.tgz
 
 
-Unpack unpack each snapshot into your manetsuite directory. This will
+Unpack each snapshot into your manetsuite directory. This will
 put the NRL code along side the QtCreator project files and other
 additions provided by the MANET Suite.
 
