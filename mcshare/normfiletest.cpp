@@ -1,6 +1,8 @@
 #include "normfiletest.h"
+#include "qnormfiletransporttest.h"
 #include <QDebug>
 #include <QDesktopServices>
+#include <QVariant>
 
 #define ADDR "224.1.2.3"
 #define INTERFACE "wlan0"
@@ -33,11 +35,19 @@ bool createReceiverDirectory()
     return answer;
 }
 
+#define TX_1MBPS 1048576
 
 NormFileTest::NormFileTest(QObject *parent) :
     QObject(parent)
 {
-    _transport = new QNormFileTransport(ADDR, PORT, NORM_NODE_ANY);
+    _transport = new QNormFileTransportTest(ADDR, PORT, NORM_NODE_ANY);
+    _transport->setAuthority(this);
+    NormSessionHandle session = _transport->normSession();
+
+    // The default rate is 64kbps.
+    // TODO: Choose a faster rate, 1mbps.
+    // TODO: Define some constants for popular bit rates.
+//    NormSetTxRate(session, TX_1MBPS);
 
     //
     // receiver signals & slots
@@ -50,7 +60,10 @@ NormFileTest::NormFileTest(QObject *parent) :
 
     //
     // sender signals & slots
-    //
+    //   
+    QObject::connect(_transport, SIGNAL(objectQueued(NormObjectHandle)),
+                     this, SLOT(on_objectQueued(NormObjectHandle)));
+
     QObject::connect(_transport, SIGNAL(objectSent(NormObjectHandle)),
                      this, SLOT(on_objectSent(NormObjectHandle)));
 
@@ -79,6 +92,22 @@ NormFileTest::~NormFileTest() {
     delete _transport;
 }
 
+bool NormFileTest::askToRenameFile(QString oldFileName, QString newFileName)
+{
+    QVariant message = tr("Rename file %1 as %2?").arg(oldFileName).arg(newFileName);
+    QVariant no_text = tr("No");
+    QVariant returnedValue;
+    QVariant yes_text = tr("Yes");
+
+    QMetaObject::invokeMethod(parent(), "dialog",
+                              Q_RETURN_ARG(QVariant, returnedValue),
+                              Q_ARG(QVariant, message),
+                              Q_ARG(QVariant, yes_text),
+                              Q_ARG(QVariant, no_text));
+
+    return returnedValue.toBool();
+}
+
 //
 // Ask the UI for permission to receive the new file.
 // If the UI grants permission, announce the new file to the UI.
@@ -104,6 +133,28 @@ void NormFileTest::on_newFile(QString fileName, NormObjectHandle object)
                                   Q_ARG(QVariant, message));
     } else {
         NormObjectCancel(object);
+    }
+}
+
+//
+// Tell the UI that sending is under way for some object.
+//
+void NormFileTest::on_objectQueued(NormObjectHandle object)
+{
+    char fileName[PATH_MAX];
+    //
+    // BUG: assumes that object is a NormFile
+    // This is partially a NORM bug because the NORM API
+    // doesn't have type safe object handles.
+    //
+    if (NormFileGetName(object, fileName, PATH_MAX)) {
+        QVariant message = tr("Sending %1").arg(fileName);
+
+        QMetaObject::invokeMethod(parent(), "addMessage",
+                                  Q_ARG(QVariant, SENDER),
+                                  Q_ARG(QVariant, message));
+    } else {
+        qDebug() << "on_sendingObject(): SHOULDN'T HAPPEN! Enqueued file but its name isn't valid.  This is a bug.";
     }
 }
 
@@ -170,42 +221,63 @@ void NormFileTest::on_readyWrite()
 // Attempt to add url to the transmission queue.
 // Return true if this is possible.  Return false otherwise.
 //
-bool NormFileTest::sendFile(QUrl url)
+// BUG: The caller can't distinguish the reason for the
+// return value false.  It could mean that the transmit queue
+// is temporarily full.  It could also mean that the URL is
+// invalid.
+//
+// It might be useful to return false if and only if the
+// transmit queue is temporarily full.  Otherwise, return
+// true.
+//
+NormFileTest::Status NormFileTest::sendFile(QUrl url)
 {
-    bool answer = false;
+    Status answer = BadURL;
 
-    if (url.isValid() && url.isLocalFile()) {
-        QString fileName = url.toLocalFile().append("\n");
+    qDebug() << "NormFileTest::sendFile(" << url << ")";
+
+    if (url.isValid()) {
+        bool couldWrite = false;
+        QString fileName = url.toLocalFile();
+        qDebug() << "NormFileTest::sendFile(): fileName " << fileName;
+        fileName.append("\n");
 
         //
         // Remember! Each line we write into a QNormFileTransport
-        // is the name of a file that we want NORM to send.
+        // is the name of a file or directory that we want NORM to send.
         //
         QByteArray fileNameByteArray = fileName.toLocal8Bit();
 
+        qDebug() << "NormFileTest::sendFile(): byteArray size "
+                 << fileNameByteArray.size();
         //
         // Failure to send all of the bytes of fileNameByteArray
         // indicates that NORM couldn't enqueue the file in its
         // transmit queue.
         //
-        answer = (fileNameByteArray.size() ==
-                  _transport->write(fileNameByteArray.constData(),
-                                    fileNameByteArray.size()));
+        const char *fileNameData = fileNameByteArray.constData();
+        couldWrite = (fileNameByteArray.size() ==
+                      _transport->write(fileNameData,
+                                        fileNameByteArray.size()));
 
         QVariant message;
 
-        if (answer) {
-            message = tr("Sending %1").arg(url.toString());
-            qDebug() << "Sending " << url;
+        if (couldWrite) {
+            answer = Success;
+            message = tr("Enqueued %1").arg(url.toString());
+            qDebug() << "Enqueued " << url;
         } else {
-            message = tr("Could not send %1").arg(url.toString());
-            qDebug() << "Could not send " << url;
+            answer = Busy;
+            message = tr("Could not enqueue %1").arg(url.toString());
+            qDebug() << "Could not enqueue " << url;
         }
 
         QMetaObject::invokeMethod(parent(), "addMessage",
                                   Q_ARG(QVariant, SENDER),
                                   Q_ARG(QVariant, message));
 
+    } else {
+        qCritical() << "Invalid URL: " << url;
     }
 
     return answer;

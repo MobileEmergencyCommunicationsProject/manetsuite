@@ -18,7 +18,8 @@ SOURCES += qnormtransport.cpp \
     norminstancemanager.cpp \
     normnotifier.cpp \
     qnormtransportstream.cpp \
-    qnormfiletransport.cpp
+    qnormfiletransport.cpp \
+    normfileinfoiterator.cpp
 
 HEADERS += qnormtransport.h\
         qnormtransport_global.h \
@@ -28,7 +29,8 @@ HEADERS += qnormtransport.h\
     QNormTransport \
     QNormTransportStream \
     qnormfiletransport.h \
-    QNormFileTransport
+    QNormFileTransport \
+    normfileinfoiterator.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

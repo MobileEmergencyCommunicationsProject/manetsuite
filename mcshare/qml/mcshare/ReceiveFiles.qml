@@ -19,7 +19,7 @@ Rectangle {
     }
 
     function backButtonClickedFunction () {
-        console.debug("BACK")
+//        console.debug("BACK")
     }
 
 //    function startButtonClickedFunction () {
@@ -170,5 +170,6 @@ Rectangle {
                     backButtonClickedFunction()
                 }
             }
-        }    }
+        }
+    }
 }

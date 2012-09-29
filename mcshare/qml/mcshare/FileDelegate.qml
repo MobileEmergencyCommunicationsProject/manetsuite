@@ -30,18 +30,40 @@ Component {
 
         MouseArea {
             anchors.fill: wrapper
-            onClicked: {
-                parent.ListView.view.currentIndex = index
 
-                // Is this cheating?
-                // Ascend or descend into a directory
-                // if the user clicks on one.
+            onClicked: {
+                //
+                // Single click to select a file or a directory
+                //
+                parent.ListView.view.currentIndex = index
+                selectedFile = filePath
+            }
+
+            onDoubleClicked: {
+                //
+                // Descend in to a directory on double click
+                //
+                parent.ListView.view.currentIndex = index
                 if (parent.ListView.view.model.isFolder(index)) {
                     parent.ListView.view.model.folder = filePath
                 }
-                else {
-                    // This has to be defined by the container
-                    selectedFile = filePath
+            }
+
+            onPressed: {
+                //
+                // Press a file or directory to select it.
+                //
+                parent.ListView.view.currentIndex = index
+                selectedFile = filePath
+            }
+
+            onPressAndHold: {
+                //
+                // Descend in to a directory on press and hold
+                //
+                parent.ListView.view.currentIndex = index
+                if (parent.ListView.view.model.isFolder(index)) {
+                    parent.ListView.view.model.folder = filePath
                 }
             }
         }

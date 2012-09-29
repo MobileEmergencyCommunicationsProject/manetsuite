@@ -31,8 +31,8 @@ Rectangle {
         console.debug("ACCEPT!")
     }
 
-    function cancelButtonFunction() {
-        console.debug("CANCEL!")
+    function clearButtonFunction() {
+        console.debug("CLEAR!")
     }
 
     function clear() {
@@ -42,11 +42,31 @@ Rectangle {
         fileChooser.currentIndex = -1
     }
 
-    function deselect(index, message) {
+    function deselect(index) {
+        var message = list_view1.model.get(index).fileName
         var idx = Globals.chosenFiles.indexOf(message)
         Globals.chosenFiles.splice(idx, 1)
         list_view1.model.remove(index)
         list_view1.currentIndex = list_view1.count - 1
+    }
+
+    function getSelectedFile(index) {
+        var answer = ""
+        var obj = list_view1.model.get(index)
+
+        if (undefined != obj) {
+            answer = obj.fileName
+        }
+
+        return answer
+    }
+
+    function selectFile(fileName) {
+        if (-1 == Globals.chosenFiles.indexOf(fileName)) {
+            list_view1.model.append({"fileName":fileName})
+            list_view1.currentIndex = list_view1.count - 1
+            Globals.chosenFiles.push(fileName)
+        }
     }
 
     //
@@ -64,11 +84,7 @@ Rectangle {
         nameFilters: ["*"]
         title: qsTr("Choose files to share")
         onSelectedFileChanged: {
-            if (-1 == Globals.chosenFiles.indexOf(selectedFile)) {
-                list_view1.model.append({"fileName":selectedFile})
-                list_view1.currentIndex = list_view1.count - 1
-                Globals.chosenFiles.push(selectedFile)
-            }
+            selectFile(selectedFile)
         }
     }
 
@@ -146,7 +162,7 @@ Rectangle {
                         anchors.fill: wrapper
                         onClicked: {
                             parent.ListView.view.currentIndex = index
-                            deselect(index, fileName)
+                            deselect(index)
                         }
                     }
                 }
@@ -202,7 +218,7 @@ Rectangle {
 
             Text {
                 id: text2
-                text: qsTr("Cancel")
+                text: qsTr("Clear")
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 font.pixelSize: 12
@@ -213,7 +229,7 @@ Rectangle {
                 anchors.fill: cancelButton
                 onClicked: {
                     clear()
-                    cancelButtonFunction()
+                    clearButtonFunction()
                 }
             }
         }

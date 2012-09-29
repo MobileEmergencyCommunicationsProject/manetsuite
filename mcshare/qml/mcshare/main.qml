@@ -55,10 +55,11 @@ Rectangle {
       file names.
 
       This dialog forgets the names of all unsent file when the user presses
-      the Clear button.
+      the Cancel button.
       */
     MultiSelectionFileDialog {
         id: fileSelector
+        anchors.fill: parent
         visible: false
 
         //
@@ -70,17 +71,25 @@ Rectangle {
         }
 
         //
-        // Extra actions to execute when the Clear button is clicked
+        // Extra actions to execute when the Cancel button is clicked
         //
         function clearButtonFunction() {
             mcshare.state = ""
         }
 
         function sendFiles() {
-            for(var i in Globals.chosenFiles) {
-                if (app.sendFile(Globals.chosenFiles[i])) {
-                    deselect(Globals.chosenFiles[i])
+            var f
+            while ((f = getSelectedFile(0)) != "") {
+                var result = app.sendFile(f)
+
+                // result is NormFileTest.Success,
+                // NormFileTest.BadURL or
+                // NormFileTest.NotAFile
+                if (result != NormFileTest.Busy) {
+                    deselect(0)
                 } else {
+                    // result is NormFileTest.Busy.
+                    // Send it later.
                     break
                 }
             }
@@ -89,6 +98,7 @@ Rectangle {
 
     ReceiveFiles {
         id:receiverPage
+        anchors.fill: parent
         buttonColor: "light blue"
 //        startButtonText: qsTr("Start Receiver")
 //        stopButtonText: qsTr("Stop Receiver")
@@ -114,6 +124,7 @@ Rectangle {
 
     ReceiveFiles {
         id:senderPage
+        anchors.fill: parent
         buttonColor: "light blue"
 //        startButtonText: qsTr("Start Sender")
 //        stopButtonText: qsTr("Stop Sender")

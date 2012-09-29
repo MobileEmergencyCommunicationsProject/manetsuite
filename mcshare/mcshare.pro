@@ -31,14 +31,17 @@ CONFIG += qdeclarative-boostable
 
 # The .cpp file which was generated for your project. Feel free to hack it.
 SOURCES += main.cpp \
-    normfiletest.cpp
+    normfiletest.cpp \
+    qnormfiletransporttest.cpp
 
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)
 qtcAddDeployment()
 
 HEADERS += \
-    normfiletest.h
+    normfiletest.h \
+    qnormfiletransporttest.h \
+    authority.h
 
 unix:!macx:LIBS += $$OUT_PWD/../qnormtransport/libqnormtransport.a \
     $$OUT_PWD/../norm/libnorm.a \

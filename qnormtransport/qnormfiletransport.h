@@ -5,6 +5,7 @@
 #include <QDirIterator>
 #include <QList>
 #include <QNormTransport>
+#include <normfileinfoiterator.h>
 
 //
 // To transmit a file, write() its name as a newline-terminated string
@@ -47,6 +48,11 @@ signals:
     //
     void newFile(const QString fileName, const NormObjectHandle object);
 
+    // Raise objectQueued when this QNormTransport
+    // sucessfully enqueues a file for transmission.
+    //
+    void objectQueued(const NormObjectHandle object);
+
     // Raise objectSent when this QNormTransport
     // recognizes that the protocol has completed
     // at least one pass at sending the NormObject.
@@ -66,18 +72,16 @@ protected:
     qint64 writeData(const char *data, qint64 len);
 
 private:
-    QList<QString> _fileNameQueue; // Names of directories and files waiting to be sent.
-    QDirIterator *_directoryIterator;  // Used when sending directories of files.
-    QString _currentFile;
+    NormFileInfoIterator _fileIterator;
 
-    /*
-      currentFile(), hasNextFile(), and nextFile()
-      implement an iterator over _fileNameQueue and
-      _directoryIterator.
+    /* true if sendFile() couldn't enqueue the
+      current file returned by _fileIterator.
+      sendFile() attempts to enqueue it again the
+      next time it is invoked.
+
+      false otherwise.
     */
-    const QString currentFile();
-    bool hasNextFile();
-    const QString nextFile();
+    bool _resendCurrentFile;
 
     /* Enqueue for transmission as many file names
        from the _fileNameQueue-_directoryIterator iterator

@@ -31,7 +31,7 @@ void TestLogic::on_newFile(const QString fileName, const NormObjectHandle object
 void TestLogic::on_objectSent(const NormObjectHandle object)
 {
     char fileName[PATH_MAX];
-//    memset(fileName, 0, PATH_MAX);
+
     // BUG: assumes that object is a NormFile
     if (NormFileGetName(object, fileName, PATH_MAX)) {
         //

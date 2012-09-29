@@ -61,10 +61,11 @@ Rectangle {
             radius: 3
             border.width: 3
             border.color: "#000000"
-            anchors.right: parent.right
-            anchors.rightMargin: 0
-            anchors.left: parent.left
-            anchors.leftMargin: 0
+//            anchors.right: parent.right
+//            anchors.rightMargin: 0
+//            anchors.left: parent.left
+//            anchors.leftMargin: 0
+            width: parent.width
 
             Text {
                 id: sendButtonText
@@ -93,10 +94,11 @@ Rectangle {
             radius: 3
             border.width: 3
             border.color: "#000000"
-            anchors.right: parent.right
-            anchors.rightMargin: 0
-            anchors.left: parent.left
-            anchors.leftMargin: 0
+//            anchors.right: parent.right
+//            anchors.rightMargin: 0
+//            anchors.left: parent.left
+//            anchors.leftMargin: 0
+            width: parent.width
 
             Text {
                 id: receiveButtonText
@@ -124,11 +126,11 @@ Rectangle {
             color: "white"
             border.width: 3
             border.color: "#000000"
-            anchors.right: parent.right
-            anchors.rightMargin: 0
-            anchors.left: parent.left
-            anchors.leftMargin: 0
-            visible: true
+//            anchors.right: parent.right
+//            anchors.rightMargin: 0
+//            anchors.left: parent.left
+//            anchors.leftMargin: 0
+            width: parent.width
 
             Text {
                 id: stopButtonText
@@ -150,13 +152,14 @@ Rectangle {
         Rectangle {
             id: messageArea
             visible: true
-            anchors.right: parent.right
-            anchors.left: parent.left
+//            anchors.right: parent.right
+//            anchors.left: parent.left
             anchors.bottom: parent.bottom
             anchors.top: stopButton.bottom
             anchors.topMargin: 10
             border.color: "blue"
             border.width: 5
+            width: parent.width
 
             // TODO: Do not show Items that scroll outside of the visible area
             ListView {

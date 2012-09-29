@@ -98,7 +98,7 @@ void NormNotifier::notify(int socket)
             t->normRxObjectInfo(&event);
             break;
         case NORM_RX_OBJECT_UPDATED:
-            qDebug() << "NormNotifier::notify(): NORM_RX_OBJECT_UPDATED";
+//            qDebug() << "NormNotifier::notify(): NORM_RX_OBJECT_UPDATED";
             t->normRxObjectUpdated(&event);
             break;
         case NORM_RX_OBJECT_COMPLETED:
