@@ -16,6 +16,17 @@ SUBDIRS = \
     mcshare \
     qnormtransport/normfileinfoiteratortest
 
+unix:!symbian {
+    maemo5 {
+# Don't build olsrgui for maemo5
+    } else:contains(MEEGO_EDITION,harmattan) {
+# Don't build olsrgui for meego harmattan
+    } else {
+	SUBDIRS += olsrgui
+	olsrgui.depends += protolib
+    }
+}
+
 OTHER_FILES += \
     qtc_packaging/debian_harmattan/rules \
     qtc_packaging/debian_harmattan/README \
