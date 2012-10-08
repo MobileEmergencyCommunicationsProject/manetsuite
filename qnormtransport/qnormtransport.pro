@@ -60,7 +60,14 @@ unix:!symbian {
 	target.path = /usr/lib
     }
 
-    INSTALLS += target
+#    INSTALLS += target
+#
+# Don't install this static library
+# because it makes the package too big
+# to fit in /tmp on N9 phones.  /tmp
+# is where QtCreator uploads package files
+#
+    INSTALLS -= target
 }
 
 

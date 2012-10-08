@@ -61,6 +61,9 @@ unix:!symbian {
 	HAVE_GETLOGIN HAVE_IPV6 HAVE_LOCKF \
 	HAVE_OLD_SIGNALHANDLER LINUX PROTO_DEBUG UNIX
 
+#
+# NormSession needs linuxCap for Explicit Congestion Notification (ECN)
+#
     SOURCES += \
     ../protolib/src/linux/linuxCap.cpp
 
@@ -72,7 +75,14 @@ unix:!symbian {
 	target.path = /usr/lib
     }
 
-    INSTALLS += target
+#    INSTALLS += target
+#
+# Don't install this static library
+# because it makes the package too big
+# to fit in /tmp on N9 phones.  /tmp
+# is where QtCreator uploads package files
+#
+    INSTALLS -= target
 }
 
 INCLUDEPATH += $$PWD/../protolib/include

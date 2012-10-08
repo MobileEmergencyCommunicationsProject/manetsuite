@@ -25,7 +25,6 @@ SOURCES += \
 
 HEADERS += \
     ./common/olsr_packet_types.h \
-    ./common/nrlolsrgui.h \
     ./common/nrlolsrApp.h \
     ./common/nrlolsr.h \
     ./common/nbr_queue.h \

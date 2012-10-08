@@ -14,13 +14,16 @@ SUBDIRS = \
     normFileRecv \
     normFileSend \
     mcshare \
-    qnormtransport/normfileinfoiteratortest
+    qnormtransport/normfileinfoiteratortest \
+    qpipe
+
 
 unix:!symbian {
     maemo5 {
 # Don't build olsrgui for maemo5
     } else:contains(MEEGO_EDITION,harmattan) {
-# Don't build olsrgui for meego harmattan
+	SUBDIRS += olsrguiharmattan
+	olsrguiharmattan.depends += protolib
     } else {
 	SUBDIRS += olsrgui
 	olsrgui.depends += protolib

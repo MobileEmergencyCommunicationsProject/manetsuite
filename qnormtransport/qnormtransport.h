@@ -357,9 +357,9 @@ protected:
     //
     unsigned short _port;
 
-    // NormRxObjectNew() and NormRxObjectUpdated() read bytes
-    // from a NORM stream and append them to _readBuffer.
-    // readData() reads bytes from _readBuffer.
+    // In derived classes, NormRxObjectNew() and NormRxObjectUpdated() read
+    // bytes from a NORM stream and append them to _readBuffer. In this base
+    // class, readData() reads bytes from _readBuffer.
     QByteArray _readBuffer;
 
     // Add bytes from a NORM stream to _readBuffer.
