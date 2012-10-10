@@ -10,7 +10,8 @@ QT       -= gui
 
 TARGET = qpipe
 TEMPLATE = lib
-CONFIG += staticlib
+#CONFIG += staticlib
+CONFIG += create_prl link_prl staticlib
 
 SOURCES += qpipe.cpp
 

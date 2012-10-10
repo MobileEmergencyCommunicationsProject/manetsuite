@@ -25,26 +25,33 @@ class QPipe : public QIODevice {
     Q_OBJECT
 
 public:
-    QPipe();
-    QPipe(QObject *parent);
+    explicit QPipe(QObject *parent = 0);
 
     virtual ~QPipe();
 
-    virtual qint64 bytesAvailable();
+    virtual qint64 bytesAvailable() const;
     virtual void close();
-    // open a pipe for writing
-    bool connect(QString pipeName);
+
+    // Open a pipe for writing.
+    // Opening the same pipe for reading and writing is undefined.
+    bool connect(QString serverPipeName);
+
     virtual bool isSequential();
-    // open a pipe for reading
+
+    // Open a pipe for reading
+    // Opening the same pipe for reading and writing is undefined.
     bool listen(QString pipeName);
+
+    // Do not call open() directly.
+    // Use connect() or listen() instead.
     virtual bool open(OpenMode mode);
 
 signals:
     void readyWrite();
 
 protected:
-    virtual qint64 readData(char *data, qint64 maxlen);
-    virtual qint64 writeData(const char *data, qint64 len);
+    qint64 readData(char *data, qint64 maxlen);
+    qint64 writeData(const char *data, qint64 len);
 
 private slots:
     void readActivated(int socket);

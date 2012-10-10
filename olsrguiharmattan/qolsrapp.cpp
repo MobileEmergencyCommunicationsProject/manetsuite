@@ -1,11 +1,11 @@
 #include <QDebug>
+#include <QDir>
 #include "qolsrapp.h"
 #include <QStringList>
 
-QOLSRApp::QOLSRApp(): clientPipeName("nrlolsr"),
-    msg_buffer(NULL),
-    serverPipeName("nrlolsrgui"),
-    updateInterval(5 /*seconds*/)
+QOLSRApp::QOLSRApp(): clientPipeName(QDir::tempPath() + "nrlolsr"),
+    serverPipeName(QDir::tempPath() + "nrlolsrgui"),
+    updateInterval(5000 /*milliseconds*/)
 {
     updateTimer.setInterval(updateInterval);
     connect(&updateTimer, SIGNAL(timeout()),
@@ -41,12 +41,6 @@ QOLSRApp::~QOLSRApp()
     updateTimer.stop();
     serverPipe.close();
     clientPipe.disconnectFromServer();
-    // TODO: Remove msg_buffer.
-    if (msg_buffer)
-    {
-        delete[] msg_buffer;
-        msg_buffer = NULL;
-    }
 }
 
 void QOLSRApp::onClientConnected()

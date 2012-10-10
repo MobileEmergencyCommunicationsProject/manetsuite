@@ -70,7 +70,6 @@ private:
 
     QLocalSocket clientPipe;
     QString clientPipeName;
-    char* msg_buffer; // TODO: Remove msg_buffer
     QLocalServer serverPipe;
     QString serverPipeName;
     int updateInterval;

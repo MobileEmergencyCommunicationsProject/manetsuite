@@ -17,7 +17,6 @@ SUBDIRS = \
     qnormtransport/normfileinfoiteratortest \
     qpipe
 
-
 unix:!symbian {
     maemo5 {
 # Don't build olsrgui for maemo5
@@ -27,6 +26,9 @@ unix:!symbian {
     } else {
 	SUBDIRS += olsrgui
 	olsrgui.depends += protolib
+
+        SUBDIRS += qpipetest
+        qpipetest.depends += qpipe
     }
 }
 
