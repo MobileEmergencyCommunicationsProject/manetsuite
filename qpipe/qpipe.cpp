@@ -45,24 +45,22 @@ void QPipe::close()
     }
 }
 
-bool QPipe::connect(QString serverPipeName)
+bool QPipe::connect(QString pipeName)
 {
     bool answer = false;
-    bool localPipeOpen = true;
+    bool localPipeOpen =  isOpen();
 
     // TALMAGE: This code originated in protoSocket.cpp:Connect()
-
-    _notifierType = QSocketNotifier::Write;
 
     // Create our own pipe to write into if we don't
     // have one already.
     //
     // What happens if uses connect() and listen() on the same file name?
     //
-    if (! isOpen()) {
+    if (!localPipeOpen) {
         QString fileNameTemplate = QDir::tempPath();
-        fileNameTemplate.append("protoSocketXXXXXX");
-        QTemporaryFile tempFile;
+        fileNameTemplate.append("/protoSocketXXXXXX");
+        QTemporaryFile tempFile(fileNameTemplate);
 
         // If we don't turn off the auto remove feature,
         // then when tempFile goes out of scope, its
@@ -77,19 +75,19 @@ bool QPipe::connect(QString serverPipeName)
             tempFile.close();
             tempFile.remove();
 
-            if (open(QIODevice::WriteOnly)) {
+            _notifierType = QSocketNotifier::Write;
+
+            if ((localPipeOpen = open(QIODevice::WriteOnly))) {
                 QObject::connect(_notifier, SIGNAL(activated(int)),
                                  this, SLOT(writeActivated(int)));
             } else {
-                qCritical() << "QPipe::connect(" << serverPipeName
+                qCritical() << "QPipe::connect(" << pipeName
                             << "): Error opening local domain socket";
-                localPipeOpen = false;
             }
         } else {
-            qCritical() << "QPipe::connect(" << serverPipeName
+            qCritical() << "QPipe::connect(" << pipeName
                         << "): Error creating temporary file "
                         << tempFile.fileName();
-            localPipeOpen = false;
         }
     }
 
@@ -98,35 +96,41 @@ bool QPipe::connect(QString serverPipeName)
     //
     if (localPipeOpen) {
         struct sockaddr_un sockAddr;
-        memset(&sockAddr, 0, sizeof(sockAddr));
 
         // This is how you turn a QString into an array of char.
         // You have to do it in two steps. Otherwise, Qt won't
         // create the QByteArray.
-        QByteArray serverPipeNameByteArray = serverPipeName.toLocal8Bit();
-        const char *serverPipeNameBytes = serverPipeNameByteArray.constData();
+        QByteArray pipeNameByteArray = pipeName.toLocal8Bit();
+        const char *pipeNameBytes = pipeNameByteArray.constData();
 
-        int serverPipeNameBytesLen = strlen(serverPipeNameBytes);
+        int pipeNameBytesLen = strlen(pipeNameBytes);
         int sun_pathMax = sizeof(sockAddr) - SUN_LEN(&sockAddr);
-        int len = std::min(sun_pathMax, serverPipeNameBytesLen);
+        int len = std::min(sun_pathMax, pipeNameBytesLen);
 
-        if (len != serverPipeNameBytesLen) {
-            qWarning() << "QPipe::connect(" << serverPipeName
-                       << "): pipe name is too long. It must be shorter than "
-                       << sun_pathMax << ".";
-        } // BUG: continuing with truncated pipe name
+        if (len == pipeNameBytesLen) {
+            memset(&sockAddr, 0, sizeof(sockAddr));
+            sockAddr.sun_family = AF_UNIX;
+            strncpy(sockAddr.sun_path, pipeNameBytes, len);
 
-        sockAddr.sun_family = AF_UNIX;
-        strncpy(sockAddr.sun_path, serverPipeNameBytes, len);
+            // TALMAGE: omitted some conditional code (from protoSocket.cpp)
+            // for calculating len when SCM_RIGHTS is defined. It referenced
+            // sockAddr.sun_len which isn't defined on Linux, Maemo, or Meego.
+            // Oddly, SCM_RIGHTS is defined on those platforms.
 
-        int addrLen = strlen(sockAddr.sun_path) + sizeof(sockAddr.sun_family);
+            len += sizeof(sockAddr.sun_family);
 
-        if (::connect(_socket, (struct sockaddr*)&sockAddr, addrLen) == 0) {
-            answer = true;
+            if (answer = (0 == ::connect(_socket, (struct sockaddr*)&sockAddr, len))) {
+                qDebug() << "QPipe::connect(): connected to AF_UNIX SOCK_DGRAM " << pipeName;
+            } else {
+                qCritical() << "QPipe::connect(" << pipeName
+                            << "): connect() error ("
+                            << errno << "): " << strerror(errno);
+                close();
+            }
         } else {
-            qCritical() << "QPipe::connect(" << serverPipeName
-                        << "): connect() error ("
-                        << errno << "): " << strerror(errno);
+            qWarning() << "QPipe::connect(" << pipeName
+                       << "): pipe name is too long. It must be no longer than "
+                       << sun_pathMax << ".";
             close();
         }
     }
@@ -164,52 +168,68 @@ bool QPipe::open(OpenMode mode)
 
     // TALMAGE: This code originated in protoSocket.cpp:Open()
     // TALMAGE: Remember! QIODevice subclasses must invoke QIODevice::open()
-    if (QIODevice::open(mode)) {
-        if (_notifierType != QSocketNotifier::Exception) {
-            struct sockaddr_un sockAddr;
-            memset(&sockAddr, 0, sizeof(sockAddr));
+    if (_notifierType != QSocketNotifier::Exception) {
+        if (QIODevice::open(mode)) {
+            bool oldPipeOK = true;
 
-            // This is how you turn a QString into an array of char.
-            // You have to do it in two steps. Otherwise, Qt won't
-            // create the QByteArray.
-            QByteArray pipeNameByteArray = _pipeName.toLocal8Bit();
-            const char *pipeNameBytes = pipeNameByteArray.constData();
-
-            int pipeNameBytesLen = strlen(pipeNameBytes);
-            int sun_pathMax = sizeof(sockAddr) - SUN_LEN(&sockAddr);
-            int len = std::min(sun_pathMax, pipeNameBytesLen);
-
-            if (len != pipeNameBytesLen) {
-                qWarning() << "QPipe::open(" << _pipeName
-                           << "): pipe name is too long. It must be shorter than "
-                           << sun_pathMax << ".";
-            } // BUG: continuing with truncated pipe name
-
-            sockAddr.sun_family = AF_UNIX;
-            strncpy(sockAddr.sun_path, pipeNameBytes, len);
-
-            // TALMAGE: omitted some conditional code (from protoSocket.cpp)
-            // for calculating len when SCM_RIGHTS is defined. It referenced
-            // sockAddr.sun_len which isn't defined on Linux, Maemo, or Meego.
-            // Oddly, SCM_RIGHTS is defined on those platforms.
-            len = strlen(sockAddr.sun_path) + sizeof(sockAddr.sun_family);
-
-            if ((_socket = socket(AF_UNIX, SOCK_DGRAM, 0)) >= 0) {
-                if (0 == bind(_socket, (struct sockaddr*)&sockAddr,  len)) {
-                    _notifier = new QSocketNotifier(_socket, _notifierType);
-                    answer = true;
-                } else {
-                    qCritical() << "QPipe::open() bind(" << _pipeName
-                                << ") error (" << errno << "): " << strerror(errno);
-                    close();
+            if (QFile::exists(_pipeName)) {
+                if (! (oldPipeOK = QFile::remove(_pipeName))) {
+                    qCritical() << "QPipe::open(): Could not remove old socket file "
+                                << _pipeName;
+                    QIODevice::close();
                 }
-            } else {
-                qCritical() << "QPipe::open() socket() error (" << errno << "): " << strerror(errno);
-                close();
             }
+
+            if (oldPipeOK) {
+                struct sockaddr_un sockAddr;
+
+                // This is how you turn a QString into an array of char.
+                // You have to do it in two steps. Otherwise, Qt won't
+                // create the QByteArray.
+                QByteArray pipeNameByteArray = _pipeName.toLocal8Bit();
+                const char *pipeNameBytes = pipeNameByteArray.constData();
+
+                int pipeNameBytesLen = strlen(pipeNameBytes);
+                int sun_pathMax = sizeof(sockAddr) - SUN_LEN(&sockAddr);
+                int len = std::min(sun_pathMax, pipeNameBytesLen);
+
+                if (len == pipeNameBytesLen) {
+                    memset(&sockAddr, 0, sizeof(sockAddr));
+                    sockAddr.sun_family = AF_UNIX;
+                    strncpy(sockAddr.sun_path, pipeNameBytes, len);
+
+                    // TALMAGE: omitted some conditional code (from protoSocket.cpp)
+                    // for calculating len when SCM_RIGHTS is defined. It referenced
+                    // sockAddr.sun_len which isn't defined on Linux, Maemo, or Meego.
+                    // Oddly, SCM_RIGHTS is defined on those platforms.
+                    len += sizeof(sockAddr.sun_family);
+
+                    if ((_socket = socket(AF_UNIX, SOCK_DGRAM, 0)) >= 0) {
+                        if (answer = (0 == bind(_socket, (struct sockaddr*)&sockAddr,  len))) {
+                            _notifier = new QSocketNotifier(_socket, _notifierType);
+                            qDebug() << "QPipe::open(): opened AF_UNIX SOCK_DGRAM " << _pipeName;
+                        } else {
+                            qCritical() << "QPipe::open(): bind(" << _pipeName
+                                        << ") error (" << errno << "): " << strerror(errno);
+                            close();
+                        }
+                    } else {
+                        qCritical() << "QPipe::open(): socket() error (" << errno << "): " << strerror(errno);
+                        close();
+                    }
+                } else {
+                    qWarning() << "QPipe::open(" << _pipeName
+                               << "): pipe name is too long. It must be no longer than "
+                               << sun_pathMax << ".";
+                } // BUG: continuing with truncated pipe name
+
+            } // else: error condition reported and mitigated above
         } else {
-            qCritical() << "QPipe::open(): Don't call open() directly.  Use QPipe::connect() or QPipe::listen() instead.";
+            qCritical() << "QPipe()::open(): QIODevice::open(" << mode << ") returned false";
+            close();
         }
+    } else {
+        qCritical() << "QPipe::open(): Don't call open() directly.  Use QPipe::connect() or QPipe::listen() instead.";
     }
 
     return answer;
@@ -238,8 +258,8 @@ void QPipe::readActivated(int socket)
     int numRead = 0;
 
     memset(buffer, 0, bufferSize);
-
-    numRead = recv(_socket, buffer, bufferSize, 0);
+    // socket == _socket?
+    numRead = recv(socket, buffer, bufferSize, 0);
 
     _readBuffer.append(buffer, numRead);
 

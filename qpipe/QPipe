@@ -1,0 +1,4 @@
+#ifndef QPIPE
+#define QPIPE
+#include "qpipe.h"
+#endif // QPIPE

@@ -15,24 +15,30 @@ PageStackWindow {
                            double tci, double tcj, double tct,
                            double hnai, double hnaj, double hnat,
                            double up, double down, double alpha,
-                           int willingness)
+                           bool willingness)
 
     Connections {
         target: applicationLogic
         onAddDestEntry: {
-            console.log("addDestEntry ", dest, ", ", gw, ", ", weight, ", ", interfaceName)
+            console.log("addDestEntry ", address, ", ", gateway, ", ", weight, ", ", interfaceName)
+
+            routes.model.append({"destination":address, "gateway":gateway, "weight":weight, "interfaceName":interfaceName })
         }
 
         onAddNeighborEntry: {
-            console.log("addNeighborEntry ", neighbor, ", ", type, ", ", hysterisis, ", ", mPRSelect)
+            console.log("addNeighborEntry ", address, ", ", status, ", ", hysteresis, ", ", mPRSelect)
+            neighbors.model.append({"address":address, "status":status, "hysteresis":hysteresis, "mPRSelect":mPRSelect })
+
         }
 
         onClearDestEntries: {
             console.log("clearDestEntries")
+            routes.model.clear()
         }
 
         onClearNeighborEntries: {
             console.log("clearNeighborEntries")
+            neighbors.model.clear()
         }
 
         onSetSettings: {
@@ -48,6 +54,27 @@ PageStackWindow {
     MainPage {
         id: mainPage
     }
+
+    ListPage {
+        id: routes
+        delegate: RouteDelegate{}
+        title: "Routes"
+
+        function buttonClickedFunction() {
+            updateRoutes()
+        }
+    }
+
+    ListPage {
+        id: neighbors
+        delegate: NeighborDelegate{}
+        title: "Neighbors"
+
+        function buttonClickedFunction() {
+            updateNeighbors()
+        }
+    }
+
 
     ToolBarLayout {
         id: commonTools
@@ -65,15 +92,15 @@ PageStackWindow {
         MenuLayout {
             MenuItem {
                 text: qsTr("Routes")
-                onClicked: updateRoutes()
+                onClicked: pageStack.replace(routes)
             }
             MenuItem {
                 text: qsTr("Neighbors")
-                onClicked: updateNeighbors()
+                onClicked: pageStack.replace(neighbors)
             }
             MenuItem {
                 text: qsTr("Settings")
-                onClicked: getSettings()
+                onClicked: pageStack.replace(mainPage) //getSettings()
             }
         }
     }

@@ -24,8 +24,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
                      &applicationLogic, SLOT(onUpdateRoutes()));
     QObject::connect(rootObject, SIGNAL(updateNeighbors()),
                      &applicationLogic, SLOT(onUpdateNeighbors()));
-    QObject::connect(rootObject, SIGNAL(settingsChanged(bool,bool,bool,double,double,double,double,double,double,double,double,double,double,double,double,int)),
-                     &applicationLogic, SLOT(onSettingsChanged(bool,bool,bool,double,double,double,double,double,double,double,double,double,double,double,double,int)));
+    QObject::connect(rootObject, SIGNAL(settingsChanged(bool,bool,bool,double,double,double,double,double,double,double,double,double,double,double,double,bool)),
+                     &applicationLogic, SLOT(onSettingsChanged(bool,bool,bool,double,double,double,double,double,double,double,double,double,double,double,double,bool)));
     QObject::connect(rootObject, SIGNAL(getSettings()),
                      &applicationLogic, SLOT(onGetSettings()));
 

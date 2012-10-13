@@ -23,6 +23,10 @@ unix:!symbian {
     } else:contains(MEEGO_EDITION,harmattan) {
 	SUBDIRS += olsrguiharmattan
 	olsrguiharmattan.depends += protolib
+        olsrguiharmattan.depends += qpipe
+
+        SUBDIRS -= qnormtransport/normfileinfoiteratortest
+
     } else {
 	SUBDIRS += olsrgui
 	olsrgui.depends += protolib

@@ -1,8 +1,8 @@
 #ifndef QOLSRAPP_H
 #define QOLSRAPP_H
 
-#include <QLocalServer>
-#include <QLocalSocket>
+#include <QPipe>
+#include <QStringList>
 #include <QTimer>
 
 class QOLSRApp : public QObject
@@ -18,9 +18,9 @@ signals:
     // routing, neighbor, and protocol settings.
     //
     // Add one route to the display
-    void addDestEntry(const QString &dest, const QString &gw, const QString &weight, const QString &interfaceName);
+    void addDestEntry(const QString &address, const QString &gateway, const QString &weight, const QString &interfaceName);
     // Add one neighbor to the display
-    void addNeighborEntry(const QString &neighbor, const QString &type, const QString &hysterisis, const QString &mPRSelect);
+    void addNeighborEntry(const QString &address, const QString &status, const QString &hysteresis, const QString &mPRSelect);
     // Remove all routes from the display
     void clearDestEntries();
     // Remove all neighbors from the display
@@ -31,7 +31,7 @@ signals:
                      const double tci, const double tcj, const double tct,
                      const double hnai, const double hnaj, const double hnat,
                      const double up, const double down, const double alpha,
-                     const int willingness);
+                     const bool willingness);
 
 public slots:
     // With these slots, the UI asks for the current
@@ -45,33 +45,35 @@ public slots:
                            const double tci, const double tcj, const double tct,
                            const double hnai, const double hnaj, const double hnat,
                            const double up, const double down, const double alpha,
-                           const int willingness);
+                           const bool willingness);
     // Client asks for current neighbors.
     void onUpdateNeighbors();
     // Client asks for current routes.
     void onUpdateRoutes();
 
 private slots:
-    // For signals from client_pipe
-    void onClientConnected();
-    void onClientDisconnected();
-    void onClientError(QLocalSocket::LocalSocketError socketError);
-    void onClientStateChanged(QLocalSocket::LocalSocketState socketState);
+    // for signals from serverPipe
+    void on_readyRead();
 
-    // for signals from server_pipe
-    void onServerNewConnection();
+    // for signals from clientPipe
+    void on_readyWrite();
 
     // for update_timer
     void onUpdateTimerTimeout();
 
 private:
+    void onClientConnected();
     bool ProcessCommands(QStringList commands);
     bool StringProcessCommands(char* theString);
 
-    QLocalSocket clientPipe;
-    QString clientPipeName;
-    QLocalServer serverPipe;
+    // Send commands to the OLSR server on clientPipe
+    QPipe pipeToServer;
     QString serverPipeName;
+    // Commands waiting to be sent on clientPipe to the OLSR server
+    QStringList _commandsForServer;
+    // Read commands (as a server) on serverPipe
+    QPipe pipeFromClient;
+    QString listeningPipeName;
     int updateInterval;
     QTimer updateTimer;
 

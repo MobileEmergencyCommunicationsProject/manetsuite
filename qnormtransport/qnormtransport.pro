@@ -84,4 +84,3 @@ DEPENDPATH += $$PWD/../norm
 win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../norm/release/norm.lib
 else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../norm/debug/norm.lib
 else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../norm/libnorm.a
-

@@ -41,3 +41,10 @@ qtcAddDeployment()
 
 HEADERS += \
     qolsrapp.h
+
+unix:!macx:!symbian: LIBS += -L$$OUT_PWD/../qpipe/ -lqpipe
+
+INCLUDEPATH += $$PWD/../qpipe
+DEPENDPATH += $$PWD/../qpipe
+
+unix:!macx:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../qpipe/libqpipe.a
