@@ -1,14 +1,12 @@
 # Add more folders to ship with the application, here
-folder_01.source = qml/olsrguiharmattan
+folder_01.source = qml/olsrguitest
 folder_01.target = qml
 DEPLOYMENTFOLDERS = folder_01
 
 # Additional import path used to resolve QML modules in Creator's code model
 QML_IMPORT_PATH =
 
-QT       += network
-
-symbian:TARGET.UID3 = 0xEB5901F0
+symbian:TARGET.UID3 = 0xE821966E
 
 # Smart Installer package's UID
 # This UID is from the protected range and therefore the package will
@@ -33,21 +31,25 @@ CONFIG += qdeclarative-boostable
 
 # The .cpp file which was generated for your project. Feel free to hack it.
 SOURCES += main.cpp \
-    qolsrapp.cpp
+    olsrguitest.cpp
 
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)
 qtcAddDeployment()
 
 HEADERS += \
-    qolsrapp.h
+    olsrguitest.h
 
-unix:!macx:!symbian: LIBS += -L$$OUT_PWD/../qpipe/ -lqpipe
+unix:!macx:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../qpipe/libqpipe.a
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../qpipe/release/ -lqpipe
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../qpipe/debug/ -lqpipe
+else:symbian: LIBS += -lqpipe
+else:unix: LIBS += -L$$OUT_PWD/../qpipe/ -lqpipe
 
 INCLUDEPATH += $$PWD/../qpipe
 DEPENDPATH += $$PWD/../qpipe
 
-unix:!macx:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../qpipe/libqpipe.a
-
-RESOURCES += \
-    olsrguiharmattan.qrc
+win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../qpipe/release/qpipe.lib
+else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../qpipe/debug/qpipe.lib
+else:unix:!symbian: PRE_TARGETDEPS += $$OUT_PWD/../qpipe/libqpipe.a

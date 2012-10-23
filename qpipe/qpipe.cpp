@@ -25,6 +25,8 @@ qint64 QPipe::bytesAvailable() const
 
 void QPipe::close()
 {
+    QIODevice::close();
+
     if (0 != _socket) {
         shutdown(_socket, SHUT_RDWR);
         ::close(_socket);
@@ -39,7 +41,7 @@ void QPipe::close()
 
     _notifierType = QSocketNotifier::Exception;
 
-    if (! QFile::remove(_pipeName)) {
+    if (QFile::exists(_pipeName) && ! QFile::remove(_pipeName)) {
         qCritical() << "QPipe::close(): Could not remove file "
                     << _pipeName;
     }
@@ -122,9 +124,10 @@ bool QPipe::connect(QString pipeName)
             if (answer = (0 == ::connect(_socket, (struct sockaddr*)&sockAddr, len))) {
                 qDebug() << "QPipe::connect(): connected to AF_UNIX SOCK_DGRAM " << pipeName;
             } else {
-                qCritical() << "QPipe::connect(" << pipeName
-                            << "): connect() error ("
-                            << errno << "): " << strerror(errno);
+                QString message = tr("QPipe::connect(%1): connect() error %2 %3");
+                setErrorString(message.arg(pipeName).arg(errno).arg(strerror(errno)));
+                qCritical() << errorString();
+
                 close();
             }
         } else {
@@ -209,12 +212,17 @@ bool QPipe::open(OpenMode mode)
                             _notifier = new QSocketNotifier(_socket, _notifierType);
                             qDebug() << "QPipe::open(): opened AF_UNIX SOCK_DGRAM " << _pipeName;
                         } else {
-                            qCritical() << "QPipe::open(): bind(" << _pipeName
-                                        << ") error (" << errno << "): " << strerror(errno);
+                            QString message = tr("QPipe::open(): bind(%1) error %2 %3 ");
+                            setErrorString(message.arg(_pipeName).arg(errno).arg(strerror(errno)));
+                            qCritical() << errorString();
+
                             close();
                         }
                     } else {
-                        qCritical() << "QPipe::open(): socket() error (" << errno << "): " << strerror(errno);
+                        QString message = tr("QPipe::open(): socket() error %1 %2");
+                        setErrorString(message.arg(errno).arg(strerror(errno)));
+                        qCritical() << errorString();
+
                         close();
                     }
                 } else {
@@ -250,6 +258,7 @@ qint64 QPipe::readData(char *data, qint64 maxlen)
 
 void QPipe::readActivated(int socket)
 {
+    QString message = tr("QPipe::readActivated(): recv() error %1 %2 ");
     _notifier->setEnabled(false);
 
     // Taken from protoPipe.cpp:Recv()
@@ -258,10 +267,7 @@ void QPipe::readActivated(int socket)
     int numRead = 0;
 
     memset(buffer, 0, bufferSize);
-    // socket == _socket?
     numRead = recv(socket, buffer, bufferSize, 0);
-
-    _readBuffer.append(buffer, numRead);
 
     if (numRead < 0) {
         switch (errno)
@@ -274,18 +280,22 @@ void QPipe::readActivated(int socket)
         case ESHUTDOWN:
         case ENOTCONN:
         default:
-            qCritical() << "QPipe::readActivated(): recv() error: "
-                        << errno << ": "
-                        << strerror(errno);
+            setErrorString(message.arg(errno).arg(strerror(errno)));
+            qCritical() << errorString();
             break;
         }
     }
 
     if (numRead > 0) {
+        _readBuffer.append(buffer, numRead);
         emit readyRead();
     }
 
-    _notifier->setEnabled(true);
+    // The slot connected to readyRead() could close this QPipe.
+    // That would set _notifier to zero, causing a SIGSEGV below.
+    if (0 != _notifier) {
+        _notifier->setEnabled(true);
+    }
 }
 
 qint64 QPipe::writeData(const char *data, qint64 len)
@@ -295,9 +305,9 @@ qint64 QPipe::writeData(const char *data, qint64 len)
     answer = send(_socket, data, len, 0);
 
     if (-1 == answer) {
-        qCritical() << "QPipe::writeData(): send() error ("
-                    << errno << ": "
-                    << strerror(errno);
+        QString message = tr("QPipe::writeData(): send() error %1 %2");
+        setErrorString(message.arg(errno).arg(strerror(errno)));
+        qCritical() << errorString();
     }
 
     return answer;
@@ -307,5 +317,10 @@ void QPipe::writeActivated(int socket)
 {
     _notifier->setEnabled(false);
     emit readyWrite();
-    _notifier->setEnabled(true);
+
+    // The slot connected to readyWrite() could close this QPipe.
+    // That would set _notifier to zero, causing a SIGSEGV below.
+    if (0 != _notifier) {
+        _notifier->setEnabled(true);
+    }
 }

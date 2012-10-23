@@ -50,6 +50,8 @@ const QDir * QNormTransport::cacheDirectory()
 
 void QNormTransport::close()
 {
+    QIODevice::close();
+
     if (openMode() && QIODevice::ReadOnly)
         NormStopReceiver(_normSessionHandle);
 
@@ -57,8 +59,6 @@ void QNormTransport::close()
         NormStopSender(_normSessionHandle);
 
     _normSessionIsReceiver = _normSessionIsSender = false;
-
-    QIODevice::close();
 }
 
 NormNodeId QNormTransport::getLocalNodeId()

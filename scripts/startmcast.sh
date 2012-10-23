@@ -3,6 +3,14 @@
 # Start the multicast experiment
 #
 
+if [ ! -z $1 ] ; then
+  OLSRD="/opt/manetsuite/bin/nrlolsrd"
+  SMFD="/opt/manetsuite/bin/nrlsmf"
+else
+  OLSRD="nrlolsrd"
+  SMFD="nrlsmf"
+fi
+ 
 #
 # It might be necessary to change some sysctl variables in order for
 # nrlolsrd to receive OLSR messages on wlan0.  Use get_mcast_sysctl.sh
@@ -39,13 +47,13 @@ OLSR_DEBUG="-d 5"
 SMFNAME="nrlsmf"
 SMF_DEBUG="debug 0"
 
-nrlsmf instance $SMFNAME cf $DEVICE hash MD5 \
+$SMFD instance $SMFNAME cf $DEVICE hash MD5 \
 $SMF_DEBUG \
 log /var/log/nrlsmf.log &
 
 sleep 10
 
-nrlolsrd -i $DEVICE -flooding ecds \
+$OLSRD -i $DEVICE -flooding ecds \
 $OLSR_DEBUG \
 -l /var/log/nrlolsrd.log \
 -rpipe $OLSRNAME \

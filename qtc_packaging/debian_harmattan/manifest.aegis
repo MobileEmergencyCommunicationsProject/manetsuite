@@ -16,4 +16,22 @@
 
 		<for path="/opt/manetsuite/bin/nrlsmf" />
 	</request>
+
+        <request policy="add">
+                <credential name="CAP::net_raw"/>
+                <credential name="CAP::net_bind_service" />
+                <credential name="CAP::net_broadcast" />
+                <credential name="CAP::net_admin" />
+
+                <for path="/opt/manetsuite/bin/startmcast.sh" />
+        </request>
+
+        <request policy="add">
+                <credential name="CAP::net_raw"/>
+                <credential name="CAP::net_bind_service" />
+                <credential name="CAP::net_broadcast" />
+                <credential name="CAP::net_admin" />
+
+                <for path="/opt/manetsuite/bin/stopmcast.sh" />
+        </request>
 </aegis>

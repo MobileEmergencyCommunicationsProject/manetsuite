@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/help" lang="EN">
+        <file>olsrguiharmattan.html</file>
+        <file>olsrguiharmattan.css</file>
+    </qresource>
+</RCC>

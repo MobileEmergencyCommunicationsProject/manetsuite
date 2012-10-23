@@ -61,10 +61,6 @@ Rectangle {
             radius: 3
             border.width: 3
             border.color: "#000000"
-//            anchors.right: parent.right
-//            anchors.rightMargin: 0
-//            anchors.left: parent.left
-//            anchors.leftMargin: 0
             width: parent.width
 
             Text {
@@ -82,7 +78,6 @@ Rectangle {
                 onPressed: {
                     appWindow.state = "SendState"
                     normTest.startSender();
-//                    messageListModel.append({"message":"Sender started"});
                 }
             }
         }
@@ -94,10 +89,6 @@ Rectangle {
             radius: 3
             border.width: 3
             border.color: "#000000"
-//            anchors.right: parent.right
-//            anchors.rightMargin: 0
-//            anchors.left: parent.left
-//            anchors.leftMargin: 0
             width: parent.width
 
             Text {
@@ -115,7 +106,6 @@ Rectangle {
                 onPressed: {
                     appWindow.state = "ReceiveState"
                     normTest.startReceiver();
-//                    messageListModel.append({"message":"Receiver started"});
                 }
             }
         }
@@ -126,10 +116,6 @@ Rectangle {
             color: "white"
             border.width: 3
             border.color: "#000000"
-//            anchors.right: parent.right
-//            anchors.rightMargin: 0
-//            anchors.left: parent.left
-//            anchors.leftMargin: 0
             width: parent.width
 
             Text {
@@ -152,8 +138,6 @@ Rectangle {
         Rectangle {
             id: messageArea
             visible: true
-//            anchors.right: parent.right
-//            anchors.left: parent.left
             anchors.bottom: parent.bottom
             anchors.top: stopButton.bottom
             anchors.topMargin: 10
@@ -230,7 +214,6 @@ Rectangle {
                 enabled: true
                 onPressed: {
                     normTest.stop();
-//                    messageListModel.append({"message":"Sender stopped"});
                     appWindow.state = ""
                 }
             }
@@ -262,7 +245,6 @@ Rectangle {
                 enabled: true
                 onPressed: {
                     normTest.stop();
-//                    messageListModel.append({"message":"Receiver stopped"});
                     appWindow.state = ""
                 }
             }

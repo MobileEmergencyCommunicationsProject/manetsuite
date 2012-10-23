@@ -48,7 +48,6 @@ void NormTest::on_readyRead()
         qDebug() << "Read " << messages.size() << " QStrings";
         for (int i=0; i < messages.size(); i++) {
             if (i < messages.size() - 1) {
-//                qDebug() << QString(messages.at(i)) << ", " << color;
                 emit newMessage(QString(messages.at(i)), color);
             }
         }
@@ -145,7 +144,6 @@ void NormTest::update()
         emit newMessage(msg, nextColor());
 
         if (_readyWrite) {
-//            _sender->markEom();
             _stream->flush(true); // mark end-of-message, then flush
         }
     }

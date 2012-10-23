@@ -31,7 +31,7 @@ signals:
                      const double tci, const double tcj, const double tct,
                      const double hnai, const double hnaj, const double hnat,
                      const double up, const double down, const double alpha,
-                     const bool willingness);
+                     const int willingness);
 
 public slots:
     // With these slots, the UI asks for the current
@@ -39,15 +39,21 @@ public slots:
     //
     // Client asks for current settings. Deliver with setSettings().
     void onGetSettings();
+
+    // Client asks to reconnect to olsrd.
+    void onReconnect();
+
     // Client delivers new values of settings.
     void onSettingsChanged(const bool al, const bool fuzzy, const bool slowdown,
                            const double hi, const double hj, const double ht,
                            const double tci, const double tcj, const double tct,
                            const double hnai, const double hnaj, const double hnat,
                            const double up, const double down, const double alpha,
-                           const bool willingness);
+                           const int willingness);
+
     // Client asks for current neighbors.
     void onUpdateNeighbors();
+
     // Client asks for current routes.
     void onUpdateRoutes();
 
@@ -62,16 +68,15 @@ private slots:
     void onUpdateTimerTimeout();
 
 private:
-    void onClientConnected();
     bool ProcessCommands(QStringList commands);
     bool StringProcessCommands(char* theString);
 
-    // Send commands to the OLSR server on clientPipe
+    // Send commands to the OLSR server on pipeToServer
     QPipe pipeToServer;
     QString serverPipeName;
-    // Commands waiting to be sent on clientPipe to the OLSR server
+    // Commands waiting to be sent on pipeToServer to the OLSR server
     QStringList _commandsForServer;
-    // Read commands (as a server) on serverPipe
+    // Read commands (as a server) on pipeFromClient
     QPipe pipeFromClient;
     QString listeningPipeName;
     int updateInterval;

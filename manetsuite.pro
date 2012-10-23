@@ -15,7 +15,8 @@ SUBDIRS = \
     normFileSend \
     mcshare \
     qnormtransport/normfileinfoiteratortest \
-    qpipe
+    qpipe \
+    olsrguitest
 
 unix:!symbian {
     maemo5 {
