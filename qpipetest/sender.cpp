@@ -1,16 +1,30 @@
 #include <iostream>
 #include <QByteArray>
 #include "sender.h"
+#include <QDebug>
 
-Sender::Sender(QString pipeName, QObject *parent) : PipeTest(pipeName, parent), _sequenceNumber(0) {
-    QObject::connect(&pipe, SIGNAL(readyRead()),
+Sender::Sender(QString pipeName, int timeoutInterval, QObject *parent) :
+    PipeTest(pipeName, parent),
+    _sequenceNumber(0), _timer(0), _timeoutInterval(timeoutInterval) {
+    QObject::connect(&_pipe, SIGNAL(readyRead()),
                      this, SLOT(on_readyRead()));
-    QObject::connect(&pipe, SIGNAL(readyWrite()),
-                     this, SLOT(on_readyWrite()));
-    pipe.connect(pipeName);
+
+    _pipe.connect(_pipeName);
+
+    _timer = new QTimer(this);
+
+    QObject::connect(_timer, SIGNAL(timeout()),
+                     this, SLOT(on_timeout()));
+
+    _timer->start(_timeoutInterval);
 }
 
 Sender::~Sender() {
+    if (0 != _timer) {
+        _timer->stop();
+        delete _timer;
+        _timer = 0;
+    }
 }
 
 void Sender::on_readyRead() {
@@ -21,14 +35,14 @@ void Sender::on_readyRead() {
                << std::endl;
 }
 
-void Sender::on_readyWrite() {
+void Sender::on_timeout() {
     QString msg = QString("Message %1").arg(_sequenceNumber);
     QByteArray msgByteArray = msg.toLocal8Bit();
     _sequenceNumber ++;
 
     // number of bytes to write includes the terminating 0
-    // in msgByteArra.
-    int numBytes = pipe.write(msgByteArray.constData(),
+    // in msgByteArray.
+    int numBytes = _pipe.write(msgByteArray.constData(),
                                msgByteArray.length() + 1);
 
     std::cout << msgByteArray.constData() << std::endl;

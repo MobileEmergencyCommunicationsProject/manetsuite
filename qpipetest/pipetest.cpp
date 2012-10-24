@@ -5,5 +5,5 @@ PipeTest::PipeTest(QString pipeName, QObject *parent) :
 }
 
 PipeTest::~PipeTest() {
-    pipe.close();
+    _pipe.close();
 }

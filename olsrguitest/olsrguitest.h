@@ -22,9 +22,6 @@ private slots:
     // for signals from serverPipe
     void on_readyRead();
 
-    // for signals from clientPipe
-    void on_readyWrite();
-
 private:
     QString nextColor();
     void onClientConnected();
@@ -37,6 +34,7 @@ private:
     void SendGuiNeighbors();
     void SendGuiRoutes();
     void SendGuiSettings();
+    void sendToServer(QString command);
     bool StringProcessCommands(char* theString);
 
     // Message colors alternate between two colors based on _colorValue
@@ -44,8 +42,7 @@ private:
     // Send commands to the OLSR GUI on pipeToServer
     QPipe pipeToServer;
     QString serverPipeName;
-    // Commands waiting to be sent on pipeToServer to the OLSR GUI
-    QStringList _commandsForServer;
+
     // Read commands (as a server) on pipeFromClient
     QPipe pipeFromClient;
     QString listeningPipeName;

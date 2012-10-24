@@ -61,21 +61,18 @@ private slots:
     // for signals from serverPipe
     void on_readyRead();
 
-    // for signals from clientPipe
-    void on_readyWrite();
-
     // for update_timer
     void onUpdateTimerTimeout();
 
 private:
     bool ProcessCommands(QStringList commands);
+    void sendToServer(QString command);
     bool StringProcessCommands(char* theString);
 
     // Send commands to the OLSR server on pipeToServer
     QPipe pipeToServer;
     QString serverPipeName;
-    // Commands waiting to be sent on pipeToServer to the OLSR server
-    QStringList _commandsForServer;
+
     // Read commands (as a server) on pipeFromClient
     QPipe pipeFromClient;
     QString listeningPipeName;

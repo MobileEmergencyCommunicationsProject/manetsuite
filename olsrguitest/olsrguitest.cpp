@@ -14,12 +14,8 @@ OlsrGuiTest::OlsrGuiTest(QObject *parent) :
     // use by randomAddress & randomStatus()
     qsrand(time.tv_sec * 1000000 + time.tv_usec);
 
-    _commandsForServer.clear();
-
     connect(&pipeFromClient, SIGNAL(readyRead()),
             this, SLOT(on_readyRead()));
-    connect(&pipeToServer, SIGNAL(readyWrite()),
-            this, SLOT(on_readyWrite()));
 }
 
 // Alternate between red and green
@@ -44,32 +40,6 @@ void OlsrGuiTest::on_readyRead()
     memset(buffer, 0, len);
     bytesRead = pipeFromClient.read(buffer, len);
     StringProcessCommands(buffer);
-}
-
-void OlsrGuiTest::on_readyWrite()
-{
-    if (_commandsForServer.length() > 0) {
-        QString first = _commandsForServer.first();
-        qint64 bytesWritten = pipeToServer.write(first.toLocal8Bit());
-
-        // TODO: If we couldn't write all of first,
-        // consider removing the bytes we did write
-        // and leave the rest of first at the head of
-        // _commandsForServer
-        if (bytesWritten == first.length()) {
-            QString message = tr("sent command: %1");
-            emit newMessage (message.arg(first), nextColor());
-            _commandsForServer.removeFirst();
-        } else {
-            QString message = tr("short write: %1 instead of %2 (%3)");
-            // BUG: This could put us in an infinite loop.
-            // What if we can never write all of first?
-            // Then we will never leave this short write condition.
-            emit newMessage(message.arg(bytesWritten).arg(first.length()).arg(first), nextColor());
-            pipeToServer.close();
-            _commandsForServer.clear();
-        }
-    }
 }
 
 bool OlsrGuiTest::ProcessCommands(QStringList argv)
@@ -215,7 +185,7 @@ void OlsrGuiTest::SendGuiNeighbors()
     int numNeighbors = qrand()%30;
     QString neighbors = randomNeighbors(numNeighbors);
     emit newMessage(neighbors, nextColor());
-    _commandsForServer.append(neighbors);
+    sendToServer(neighbors);
 }
 
 void OlsrGuiTest::SendGuiRoutes()
@@ -223,7 +193,7 @@ void OlsrGuiTest::SendGuiRoutes()
     int numRoutes = qrand()%30;
     QString routes = randomRoutes(numRoutes);
     emit newMessage(routes, nextColor());
-    _commandsForServer.append(routes);
+    sendToServer(routes);
 }
 
 void OlsrGuiTest::SendGuiSettings()
@@ -274,7 +244,24 @@ void OlsrGuiTest::SendGuiSettings()
     settings.append(QString::number(qrand()%11)); // local willingness
 
     emit newMessage(settings, nextColor());
-    _commandsForServer.append(settings);
+    sendToServer(settings);
+}
+
+void OlsrGuiTest::sendToServer(QString command)
+{
+    if (command.length() > 0) {
+        QByteArray bytes = command.toLocal8Bit();
+        qint64 bytesWritten = pipeToServer.write(bytes);
+
+        if (bytesWritten == bytes.length()) {
+            QString message = tr("sent command: %1");
+            emit newMessage (message.arg(command), nextColor());
+        } else {
+            QString message = tr("short write: %1 instead of %2 (%3)");
+            emit newMessage(message.arg(bytesWritten).arg(bytes.length()).arg(command), nextColor());
+            pipeToServer.close();
+        }
+    }
 }
 
 void OlsrGuiTest::start()
@@ -294,8 +281,6 @@ void OlsrGuiTest::stop()
     if (pipeFromClient.isOpen()) {
         pipeFromClient.close();
     }
-
-    _commandsForServer.clear();
 }
 
 bool OlsrGuiTest::StringProcessCommands(char* theString)

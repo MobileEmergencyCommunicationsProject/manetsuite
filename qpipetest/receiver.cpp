@@ -3,11 +3,11 @@
 #include "receiver.h"
 
 Receiver::Receiver(QString pipeName, QObject *parent) : PipeTest(pipeName, parent) {
-    QObject::connect(&pipe, SIGNAL(readyRead()),
+    QObject::connect(&_pipe, SIGNAL(readyRead()),
                      this, SLOT(on_readyRead()));
-    QObject::connect(&pipe, SIGNAL(readyWrite()),
-                     this, SLOT(on_readyWrite()));
-    pipe.listen(pipeName);
+//    QObject::connect(&_pipe, SIGNAL(readyWrite()),
+//                     this, SLOT(on_timeout()));
+    _pipe.listen(_pipeName);
 }
 
 Receiver::~Receiver() {
@@ -18,7 +18,7 @@ void Receiver::on_readyRead() {
     char buf[len];
     qint64 numRead;
 
-    while ((numRead = pipe.read(buf, len)) > 0) {
+    while ((numRead = _pipe.read(buf, len)) > 0) {
         std::cout.write(buf, numRead);
     }
 
@@ -28,7 +28,7 @@ void Receiver::on_readyRead() {
     std::cout << std::endl;
 }
 
-void Receiver::on_readyWrite() {
+void Receiver::on_timeout() {
     QByteArray pipeNameByteArray = _pipeName.toLocal8Bit();
     std::cout << "Receiver: Ready to write pipe "
               << pipeNameByteArray.constData()

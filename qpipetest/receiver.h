@@ -12,6 +12,6 @@ public:
 
 public slots:
     void on_readyRead();
-    void on_readyWrite();
+    void on_timeout();
 };
 #endif // RECEIVER_H

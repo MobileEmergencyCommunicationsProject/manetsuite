@@ -13,10 +13,10 @@ public:
 
 public slots:
     virtual void on_readyRead() = 0;
-    virtual void on_readyWrite() = 0;
+    virtual void on_timeout() = 0;
 
 protected:
-    QPipe pipe;
+    QPipe _pipe;
     QString _pipeName;
 };
 #endif // PIPETEST_H

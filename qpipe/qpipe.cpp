@@ -77,12 +77,21 @@ bool QPipe::connect(QString pipeName)
             tempFile.close();
             tempFile.remove();
 
+            // Although _notifier, the QSocketNotifier, is used to
+            // inform QPipe that the socket is readable, it is not
+            // used to inform that the socket is writable.  This is
+            // because the socket is nearly always writable.  Thus,
+            // _notifier will emit the activated() signal constantly.
+            // QPipe would spend all of its time processing the signal,
+            // greedily sucking away at the CPU until there is nothing
+            // left for the application.
+            //
+            // Setting _notifierType here allows connect() to call open().
+            //
             _notifierType = QSocketNotifier::Write;
 
-            if ((localPipeOpen = open(QIODevice::WriteOnly))) {
-                QObject::connect(_notifier, SIGNAL(activated(int)),
-                                 this, SLOT(writeActivated(int)));
-            } else {
+            localPipeOpen = open(QIODevice::WriteOnly);
+            if (! localPipeOpen) {
                 qCritical() << "QPipe::connect(" << pipeName
                             << "): Error opening local domain socket";
             }
@@ -121,9 +130,9 @@ bool QPipe::connect(QString pipeName)
 
             len += sizeof(sockAddr.sun_family);
 
-            if (answer = (0 == ::connect(_socket, (struct sockaddr*)&sockAddr, len))) {
-                qDebug() << "QPipe::connect(): connected to AF_UNIX SOCK_DGRAM " << pipeName;
-            } else {
+            answer = (0 == ::connect(_socket, (struct sockaddr*)&sockAddr, len));
+
+            if (!answer){
                 QString message = tr("QPipe::connect(%1): connect() error %2 %3");
                 setErrorString(message.arg(pipeName).arg(errno).arg(strerror(errno)));
                 qCritical() << errorString();
@@ -209,8 +218,9 @@ bool QPipe::open(OpenMode mode)
 
                     if ((_socket = socket(AF_UNIX, SOCK_DGRAM, 0)) >= 0) {
                         if (answer = (0 == bind(_socket, (struct sockaddr*)&sockAddr,  len))) {
-                            _notifier = new QSocketNotifier(_socket, _notifierType);
-                            qDebug() << "QPipe::open(): opened AF_UNIX SOCK_DGRAM " << _pipeName;
+                            if (QSocketNotifier::Read == _notifierType) {
+                                _notifier = new QSocketNotifier(_socket, _notifierType);
+                            }
                         } else {
                             QString message = tr("QPipe::open(): bind(%1) error %2 %3 ");
                             setErrorString(message.arg(_pipeName).arg(errno).arg(strerror(errno)));
@@ -311,16 +321,4 @@ qint64 QPipe::writeData(const char *data, qint64 len)
     }
 
     return answer;
-}
-
-void QPipe::writeActivated(int socket)
-{
-    _notifier->setEnabled(false);
-    emit readyWrite();
-
-    // The slot connected to readyWrite() could close this QPipe.
-    // That would set _notifier to zero, causing a SIGSEGV below.
-    if (0 != _notifier) {
-        _notifier->setEnabled(true);
-    }
 }

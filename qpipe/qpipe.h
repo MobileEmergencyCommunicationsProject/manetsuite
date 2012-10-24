@@ -18,8 +18,7 @@
   fromClient.listen("myName");
   QByteArray b = fromClient.readAll();
 
-  Connect to the readyRead() or readyWrite() signal to learn
-  when a QPipe is readable or writable, respectively.
+  Connect to the readyRead() signal to learn when a QPipe is readable.
   */
 class QPipe : public QIODevice {
     Q_OBJECT
@@ -46,16 +45,12 @@ public:
     // Use connect() or listen() instead.
     virtual bool open(OpenMode mode);
 
-signals:
-    void readyWrite();
-
 protected:
     qint64 readData(char *data, qint64 maxlen);
     qint64 writeData(const char *data, qint64 len);
 
 private slots:
     void readActivated(int socket);
-    void writeActivated(int socket);
 
 private:
     QSocketNotifier *_notifier;
