@@ -14,19 +14,25 @@ SUBDIRS = \
     normFileRecv \
     normFileSend \
     mcshare \
-    qnormtransport/normfileinfoiteratortest \
-    qpipe \
-    olsrguitest
+    qpipe
+
 
 unix:!symbian {
     maemo5 {
 # Don't build olsrgui for maemo5
+# Don't build normfileinfoiteratortest for maemo5
+
+#        SUBDIRS -= qnormtransport/normfileinfoiteratortest
+
     } else:contains(MEEGO_EDITION,harmattan) {
 	SUBDIRS += olsrguiharmattan
-	olsrguiharmattan.depends += protolib
+#	olsrguiharmattan.depends += protolib
         olsrguiharmattan.depends += qpipe
 
-        SUBDIRS -= qnormtransport/normfileinfoiteratortest
+        SUBDIRS += olsrguitest
+        olsrguitest.depends += qpipe
+
+#        SUBDIRS -= qnormtransport/normfileinfoiteratortest
 
     } else {
 	SUBDIRS += olsrgui
@@ -34,6 +40,8 @@ unix:!symbian {
 
         SUBDIRS += qpipetest
         qpipetest.depends += qpipe
+
+        SUBDIRS += qnormtransport/normfileinfoiteratortest
     }
 }
 
