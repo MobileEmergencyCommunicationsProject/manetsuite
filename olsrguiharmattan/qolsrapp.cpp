@@ -17,7 +17,7 @@ QOLSRApp::QOLSRApp(): /*serverPipeName(QDir::tempPath() + "/nrlolsr")*/
             this, SLOT(on_readyRead()));
 
     onReconnect();
-//    updateTimer.start();
+    updateTimer.start();
 }
 
 QOLSRApp::~QOLSRApp()
