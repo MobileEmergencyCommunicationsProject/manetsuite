@@ -1,7 +1,7 @@
 MANET Suite
 ====
 
-Updated October 29, 2012
+Updated October 31, 2012
 
 
 The MANET Suite is about group communication over WIFI using mobile phones. 
@@ -9,6 +9,16 @@ It is a collection of free, open source applications.
 
 The MANET Suite builds on the mobile ad hoc networking projects at the
 U. S. Naval Research Laboratory.  
+
+OBTAINING MANET SUITE
+
+MANET Suite is stored on GitHub in the repository git@github.com:MobileEmergencyCommunicationsProject/manetsuite.git.
+
+The master branch will always be buildable and will always contain released code.
+Releases are tagged in the form Release-<major>.<minor>.  For example, Release 1.0
+is tagged Release-1.0.
+
+The dev branch is for developers.  It might contain buildable, working code.
 
 
 BUILDING MANET SUITE
