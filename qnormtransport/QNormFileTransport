@@ -1,6 +1,0 @@
-#ifndef QNORMFILETRANSPORT
-#define QNORMFILETRANSPORT
-
-#include "qnormfiletransport.h"
-
-#endif // QNORMFILETRANSPORT
