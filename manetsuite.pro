@@ -43,6 +43,9 @@ unix:!symbian {
 
         SUBDIRS += qnormtransport/normfileinfoiteratortest
     }
+
+        SUBDIRS += balls
+        balls.depends += qnormtransport norm protolib
 }
 
 OTHER_FILES += \
@@ -65,6 +68,7 @@ mping.depends = qnormtransport norm protolib
 normfileinfoiteratortest.depends = qnormtransport norm protolib
 nrlolsr.depends = protolib
 nrlsmf.depends = protolib
+olsrguiharmattan.depends = qpipe
 qnormfiletransporttest = qnormtransport norm protolib
 qnormtransport.depends = norm protolib
 qnormtransporttest.depends = qnormtransport norm protolib

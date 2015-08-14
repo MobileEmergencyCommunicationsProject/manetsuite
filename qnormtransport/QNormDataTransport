@@ -1,0 +1,6 @@
+#ifndef QNORMDATATRANSPORT
+#define QNORMDATATRANSPORT
+
+#include "qnormdatatransport.h"
+
+#endif // QNORMDATATRANSPORT

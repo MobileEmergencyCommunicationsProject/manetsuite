@@ -145,3 +145,13 @@ OTHER_FILES += \
     qtc_packaging/debian_fremantle/compat \
     qtc_packaging/debian_fremantle/changelog \
     README.maemo-meego
+
+maemo5 {
+    target.path = /opt/protolib/lib
+    INSTALLS += target
+}
+
+contains(MEEGO_EDITION,harmattan) {
+    target.path = /opt/protolib/lib
+    INSTALLS += target
+}

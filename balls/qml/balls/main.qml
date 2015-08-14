@@ -70,6 +70,8 @@
 
 // import QtQuick 1.0 // to target S60 5th Edition or Maemo 5
 import QtQuick 1.1
+import AppLogic 1.0
+import "objectstore.js" as ObjectStore
 
 Rectangle {
     id: page
@@ -77,13 +79,55 @@ Rectangle {
     color: "Black"
 
     property Component itemComponent : Qt.createComponent("Ball.qml")
+    signal add(string uuid, int duration, int velocity, real x, real y, real z)
+    signal remove(string uuid)
+
+    Component.onCompleted: {
+        console.debug("PlayerID:", appLogic.playerID)
+    }
+
+    function removeBall(uuid) {
+        console.debug("Emitting signal REMOVE ", uuid)
+        appLogic.on_remove(uuid)
+
+        var ball = ObjectStore.remove(uuid)
+        if (null != ball) ball.destroy()
+    }
+
+    AppLogic {
+        id: appLogic
+
+        onAdd: {
+            console.debug("Received signal ADD ", uuid, duration, velocity, x, y, z)
+            var ball = itemComponent.createObject(page,
+                                                  {"color":color, "duration": duration, "uniqueId":uuid,
+                                                      "velocity": velocity, "x": x, "y": y, "z": z
+                                                  });
+            ball.clicked.connect(removeBall)
+            // TODO: enforce uniqueness of keys.  Don't insert ball if its key is already in use.
+            ObjectStore.insert(ball.uniqueId, ball)
+        }
+
+        onRemove: {
+            console.debug("Received signal: REMOVE ", uuid)
+            var ball = ObjectStore.remove(uuid)
+            if (null != ball) ball.destroy()
+        }
+    }
 
     MouseArea {
         id: mouseArea
         anchors.fill: parent
 
         onClicked: {
-            itemComponent.createObject(page, {"duration": 4000, "velocity": 100, "x": mouseX, "y": mouseY, "z": 3});
+            var ball = itemComponent.createObject(page,
+                                                  {"duration": 4000, "uniqueId":appLogic.uuid(),
+                                                   "velocity": 100, "x": mouseX, "y": mouseY, "z": 3
+                                                  });
+            ball.clicked.connect(removeBall)
+            ObjectStore.insert(ball.uniqueId, ball);
+            console.debug("Emitting signal ADD ", ball.uniqueId, ball.color, ball.duration, ball.velocity, ball.x, ball.y, ball.z)
+            appLogic.on_add(ball.uniqueId, ball.color, ball.duration, ball.velocity, ball.x, ball.y, ball.z)
         }
     }
 }

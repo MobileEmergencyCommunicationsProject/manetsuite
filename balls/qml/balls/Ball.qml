@@ -8,9 +8,12 @@ Rectangle {
     // Add a property for the target y coordinate
     property variant direction : "right"
     property int duration : 2000
+    property string uniqueId
     property int velocity : 200
     x: 20; width: 20; height: 20; z: 1
     color: "Lime"
+
+    signal clicked(string uuid)
 
     // Move the ball to the right and back to the left repeatedly
     SequentialAnimation on x {
@@ -43,7 +46,8 @@ Rectangle {
         hoverEnabled: true
 
         onPressed: {
-            parent.destroy()
+            console.debug("clicked ", uniqueId)
+            parent.clicked(uniqueId)
         }
     }
 }

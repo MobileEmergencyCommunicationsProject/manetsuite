@@ -33,3 +33,13 @@ unix:!symbian {
 #
     INSTALLS -= target
 }
+
+maemo5 {
+    target.path = /opt/qpipe/lib
+    INSTALLS += target
+}
+
+contains(MEEGO_EDITION,harmattan) {
+    target.path = /opt/qpipe/lib
+    INSTALLS += target
+}
